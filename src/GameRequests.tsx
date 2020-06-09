@@ -1,5 +1,5 @@
 import React from 'react';
-import { List, Divider } from '@material-ui/core';
+import { List, Divider, Typography } from '@material-ui/core';
 import HomeSection from './components/HomeSection';
 import SentGameRequestItem from './SentGameRequestItem';
 import ReceivedGameRequestItem from './ReceivedGameRequestItem';
@@ -10,6 +10,9 @@ export default function GameRequests() {
 
   return (
     <HomeSection title="Game Requests">
+      {receivedGameRequests.length === 0 && sentGameRequests.length === 0 && (
+        <Typography variant="body1">No requests to display.</Typography>
+      )}
       {receivedGameRequests.length !== 0 && (
         <List>
           {receivedGameRequests.map((gameRequest) => (
