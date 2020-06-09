@@ -15,7 +15,11 @@ export default function Nav() {
     <AppBar position="sticky">
       <StyledToolbar>
         <Typography variant="h6">Rummy 500</Typography>
-        {isSignedIn && <Button color="inherit" onClick={signOut}>Sign Out</Button>}
+        {isSignedIn && (
+          <Button color="inherit" onClick={signOut}>
+            Sign Out
+          </Button>
+        )}
       </StyledToolbar>
     </AppBar>
   );

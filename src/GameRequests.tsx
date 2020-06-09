@@ -12,8 +12,11 @@ export default function GameRequests() {
     <HomeSection title="Game Requests">
       {receivedGameRequests.length !== 0 && (
         <List>
-          {receivedGameRequests.map(gameRequest => (
-            <ReceivedGameRequestItem key={gameRequest.id} gameRequest={gameRequest} />
+          {receivedGameRequests.map((gameRequest) => (
+            <ReceivedGameRequestItem
+              key={gameRequest.id}
+              gameRequest={gameRequest}
+            />
           ))}
         </List>
       )}
@@ -22,8 +25,11 @@ export default function GameRequests() {
       )}
       {sentGameRequests.length !== 0 && (
         <List>
-          {sentGameRequests.map(gameRequest => (
-            <SentGameRequestItem key={gameRequest.id} gameRequest={gameRequest} />
+          {sentGameRequests.map((gameRequest) => (
+            <SentGameRequestItem
+              key={gameRequest.id}
+              gameRequest={gameRequest}
+            />
           ))}
         </List>
       )}

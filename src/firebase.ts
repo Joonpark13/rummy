@@ -29,14 +29,14 @@ export type GameRequest = {
 };
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCUX6oYXngvqjDR29JBam1LPa2FoaZmRA8",
-  authDomain: "rummy-500.firebaseapp.com",
-  databaseURL: "https://rummy-500.firebaseio.com",
-  projectId: "rummy-500",
-  storageBucket: "rummy-500.appspot.com",
-  messagingSenderId: "119518676647",
-  appId: "1:119518676647:web:df558bbe6e60b07dafbd82",
-  measurementId: "G-27YTQDMRCM",
+  apiKey: 'AIzaSyCUX6oYXngvqjDR29JBam1LPa2FoaZmRA8',
+  authDomain: 'rummy-500.firebaseapp.com',
+  databaseURL: 'https://rummy-500.firebaseio.com',
+  projectId: 'rummy-500',
+  storageBucket: 'rummy-500.appspot.com',
+  messagingSenderId: '119518676647',
+  appId: '1:119518676647:web:df558bbe6e60b07dafbd82',
+  measurementId: 'G-27YTQDMRCM',
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -46,16 +46,17 @@ export default firebase;
 const db = firebase.firestore();
 
 export function useCurrentUser() {
-  const [user, setUser] = useState<firebase.User|null>(null);
+  const [user, setUser] = useState<firebase.User | null>(null);
 
   useEffect(
-    () => firebase.auth().onAuthStateChanged(user => {
-      if (user) {
-        setUser(user);
-      } else {
-        setUser(null);
-      }
-    }),
+    () =>
+      firebase.auth().onAuthStateChanged((user) => {
+        if (user) {
+          setUser(user);
+        } else {
+          setUser(null);
+        }
+      }),
     [setUser]
   );
 
@@ -108,14 +109,22 @@ export function createGameRequest(recipientUid: string, senderUid: string) {
   });
 }
 
-function queryRequest(field: string, uid: string, setter: (value: GameRequest[]) => void) {
+function queryRequest(
+  field: string,
+  uid: string,
+  setter: (value: GameRequest[]) => void
+) {
   return db
     .collection(Collections.requests)
     .where(field, '==', uid)
-    .onSnapshot(querySnapshot => {
+    .onSnapshot((querySnapshot) => {
       setter(
         querySnapshot.docs.map(
-          queryDocSnapshot => ({ id: queryDocSnapshot.id, ...queryDocSnapshot.data() } as GameRequest)
+          (queryDocSnapshot) =>
+            ({
+              id: queryDocSnapshot.id,
+              ...queryDocSnapshot.data(),
+            } as GameRequest)
         )
       );
     });
@@ -124,31 +133,27 @@ function queryRequest(field: string, uid: string, setter: (value: GameRequest[])
 export function useGameRequests() {
   const user = useCurrentUser();
   const [sentGameRequests, setSentGameRequests] = useState<GameRequest[]>([]);
-  const [receivedGameRequests, setReceivedGameRequests] = useState<GameRequest[]>([]);
+  const [receivedGameRequests, setReceivedGameRequests] = useState<
+    GameRequest[]
+  >([]);
 
-  useEffect(
-    () => {
-      if (user) {
-        return queryRequest('from', user.uid, setSentGameRequests);
-      }
-    },
-    [setSentGameRequests, user]
-  );
+  useEffect(() => {
+    if (user) {
+      return queryRequest('from', user.uid, setSentGameRequests);
+    }
+  }, [setSentGameRequests, user]);
 
-  useEffect(
-    () => {
-      if (user) {
-        return queryRequest('to', user.uid, setReceivedGameRequests);
-      }
-    },
-    [setReceivedGameRequests, user]
-  );
+  useEffect(() => {
+    if (user) {
+      return queryRequest('to', user.uid, setReceivedGameRequests);
+    }
+  }, [setReceivedGameRequests, user]);
 
   return [sentGameRequests, receivedGameRequests];
 }
 
 export function useUser(uid: string) {
-  const [user, setUser] = useState<User|null>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -160,7 +165,10 @@ export function useUser(uid: string) {
   return user;
 }
 
-export async function pendingGameRequestExists(currentUid: string , recipientEmail: string): Promise<boolean> {
+export async function pendingGameRequestExists(
+  currentUid: string,
+  recipientEmail: string
+): Promise<boolean> {
   const { uid: recipientUid } = await findUserByEmail(recipientEmail);
   const querySnapshot = await db
     .collection(Collections.requests)
@@ -174,6 +182,4 @@ export function removeRequest(gameRequest: GameRequest) {
   db.collection(Collections.requests).doc(gameRequest.id).delete();
 }
 
-export function createGame(gameRequest: GameRequest) {
-
-}
+export function createGame(gameRequest: GameRequest) {}

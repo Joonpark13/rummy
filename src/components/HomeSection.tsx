@@ -1,5 +1,11 @@
 import React from 'react';
-import { Box, Typography, Card, CardContent, CardActions } from '@material-ui/core';
+import {
+  Box,
+  Typography,
+  Card,
+  CardContent,
+  CardActions,
+} from '@material-ui/core';
 
 type HomeSectionProps = {
   title: string;
@@ -7,7 +13,11 @@ type HomeSectionProps = {
   actions?: React.ReactNode;
 };
 
-export default function HomeSection({ title, children, actions }: HomeSectionProps) {
+export default function HomeSection({
+  title,
+  children,
+  actions,
+}: HomeSectionProps) {
   return (
     <>
       <Box mb={1}>
@@ -15,9 +25,7 @@ export default function HomeSection({ title, children, actions }: HomeSectionPro
       </Box>
       <Card>
         <CardContent>{children}</CardContent>
-        {actions && (
-          <CardActions>{actions}</CardActions>
-        )}
+        {actions && <CardActions>{actions}</CardActions>}
       </Card>
     </>
   );

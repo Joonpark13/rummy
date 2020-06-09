@@ -3,9 +3,7 @@ import firebase, { userExists, addUserToFirestore } from './firebase';
 import { StyledFirebaseAuth } from 'react-firebaseui';
 
 const uiConfig = {
-  signInOptions: [
-    firebase.auth.GoogleAuthProvider.PROVIDER_ID,
-  ],
+  signInOptions: [firebase.auth.GoogleAuthProvider.PROVIDER_ID],
   callbacks: {
     signInSuccessWithAuthResult: ({ user }: { user: firebase.User }) => {
       handleInitialSignIn(user);
@@ -15,13 +13,13 @@ const uiConfig = {
 };
 
 async function handleInitialSignIn(user: firebase.User) {
-  if (!await userExists(user.uid)) {
+  if (!(await userExists(user.uid))) {
     addUserToFirestore(user);
   }
 }
 
 export default function SignIn() {
   return (
-    <StyledFirebaseAuth uiConfig={uiConfig} firebaseAuth={firebase.auth()}/>
+    <StyledFirebaseAuth uiConfig={uiConfig} firebaseAuth={firebase.auth()} />
   );
 }

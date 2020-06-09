@@ -1,6 +1,20 @@
 import React, { useState } from 'react';
-import { Button, TextField, Snackbar, SnackbarCloseReason, Dialog, DialogTitle, DialogActions } from '@material-ui/core';
-import { useCurrentUser, userEmailExists, createGameRequest, findUserByEmail, pendingGameRequestExists } from './firebase';
+import {
+  Button,
+  TextField,
+  Snackbar,
+  SnackbarCloseReason,
+  Dialog,
+  DialogTitle,
+  DialogActions,
+} from '@material-ui/core';
+import {
+  useCurrentUser,
+  userEmailExists,
+  createGameRequest,
+  findUserByEmail,
+  pendingGameRequestExists,
+} from './firebase';
 import HomeSection from './components/HomeSection';
 
 export default function StartNewGame() {
@@ -19,7 +33,7 @@ export default function StartNewGame() {
     if (isOwnEmail) {
       setFailureMessage('Must not be your own email.');
       setDialogOpen(true);
-    } else if (!await userEmailExists(recipientEmail)) {
+    } else if (!(await userEmailExists(recipientEmail))) {
       setFailureMessage('This email is not a valid user.');
       setDialogOpen(true);
     } else if (await pendingGameRequestExists(user.uid, recipientEmail)) {
@@ -33,7 +47,10 @@ export default function StartNewGame() {
     }
   }
 
-  function handleSnackbarClose(event: React.SyntheticEvent, reason: SnackbarCloseReason) {
+  function handleSnackbarClose(
+    event: React.SyntheticEvent,
+    reason: SnackbarCloseReason
+  ) {
     if (reason !== 'clickaway') {
       setSnackbarOpen(false);
     }
@@ -44,7 +61,9 @@ export default function StartNewGame() {
   }
 
   const actions = (
-    <Button size="small" onClick={() => sendRequest(email)}>Send Request</Button>
+    <Button size="small" onClick={() => sendRequest(email)}>
+      Send Request
+    </Button>
   );
   return (
     <HomeSection title="Start New Game" actions={actions}>
@@ -52,7 +71,7 @@ export default function StartNewGame() {
         label="Enter a user email"
         variant="outlined"
         value={email}
-        onChange={event => setEmail(event.target.value)}
+        onChange={(event) => setEmail(event.target.value)}
       />
       <Snackbar
         open={snackbarOpen}
@@ -60,10 +79,7 @@ export default function StartNewGame() {
         onClose={handleSnackbarClose}
         message="Request sent."
       />
-      <Dialog
-        open={dialogOpen}
-        onClose={handleDialogClose}
-      >
+      <Dialog open={dialogOpen} onClose={handleDialogClose}>
         <DialogTitle>{failureMessage}</DialogTitle>
         <DialogActions>
           <Button onClick={handleDialogClose}>Close</Button>

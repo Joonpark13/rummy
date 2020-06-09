@@ -11,7 +11,7 @@ function App() {
   return (
     <Box component="main" height="100%">
       <Nav />
-      {isSignedIn ? <Home />: <SignIn />}
+      {isSignedIn ? <Home /> : <SignIn />}
     </Box>
   );
 }

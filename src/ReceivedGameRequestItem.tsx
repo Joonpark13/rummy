@@ -1,5 +1,10 @@
 import React from 'react';
-import { ListItem, ListItemText, ListItemSecondaryAction, IconButton } from '@material-ui/core';
+import {
+  ListItem,
+  ListItemText,
+  ListItemSecondaryAction,
+  IconButton,
+} from '@material-ui/core';
 import { PlayArrow } from '@material-ui/icons';
 import { useUser, GameRequest, createGame } from './firebase';
 
@@ -7,7 +12,9 @@ type ReceivedGameRequestItemProps = {
   gameRequest: GameRequest;
 };
 
-export default function ReceivedGameRequestItem({ gameRequest }: ReceivedGameRequestItemProps) {
+export default function ReceivedGameRequestItem({
+  gameRequest,
+}: ReceivedGameRequestItemProps) {
   const user = useUser(gameRequest.to);
 
   if (!user) {
@@ -27,4 +34,3 @@ export default function ReceivedGameRequestItem({ gameRequest }: ReceivedGameReq
     </ListItem>
   );
 }
-
