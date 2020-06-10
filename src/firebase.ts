@@ -3,66 +3,16 @@ import * as firebase from 'firebase/app';
 import 'firebase/analytics';
 import 'firebase/auth';
 import 'firebase/firestore';
-
-enum Collections {
-  users = 'users',
-  requests = 'requests',
-  games = 'games',
-}
-
-export type User = {
-  displayName: string;
-  email: string;
-  photoURL: string;
-  uid: string;
-};
-
-export enum GameRequestStatus {
-  pending = 'PENDING',
-  declined = 'DECLINED',
-}
-
-export type GameRequest = {
-  id: string;
-  from: string;
-  to: string;
-  status: GameRequestStatus;
-};
-
-enum GameStatus {
-  ongoing = 'ONGOING',
-  ended = 'ENDED',
-}
-
-enum Suit {
-  spade = 'SPADE',
-  diamond = 'DIAMOND',
-  heart = 'HEART',
-  club = 'CLUB',
-}
-
-type Card = {
-  suit: Suit;
-  value: number;
-};
-
-type Round = {
-  deck: Card[];
-  discard: Card[];
-  playerCards: {
-    [uid: string]: {
-      hand: Card[];
-      laid: Card[][];
-    };
-  };
-};
-
-export type Game = {
-  id: string;
-  players: string[];
-  rounds: Round[];
-  status: GameStatus;
-};
+import shuffle from 'shuffle-array';
+import { ORDERED_DECK, HAND_SIZE } from './constants';
+import {
+  Collections,
+  User,
+  GameRequestStatus,
+  GameRequest,
+  GameStatus,
+  Game,
+} from './types';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyCUX6oYXngvqjDR29JBam1LPa2FoaZmRA8',
@@ -223,26 +173,30 @@ export function removeRequest(gameRequest: GameRequest): void {
   db.collection(Collections.requests).doc(gameRequest.id).delete();
 }
 
+function initializeFirstRound(gameRequest: GameRequest) {
+  const shuffledDeck = shuffle(ORDERED_DECK, { copy: true });
+  return {
+    playerCards: {
+      [gameRequest.from]: {
+        hand: shuffledDeck.slice(0, HAND_SIZE),
+        laid: [],
+      },
+      [gameRequest.to]: {
+        hand: shuffledDeck.slice(HAND_SIZE, HAND_SIZE * 2),
+        laid: [],
+      },
+    },
+    discard: [shuffledDeck[HAND_SIZE * 2]],
+    deck: shuffledDeck.slice(HAND_SIZE * 2 + 1),
+    turn: gameRequest.from,
+  };
+}
+
 export function createGame(gameRequest: GameRequest): void {
   removeRequest(gameRequest);
   db.collection(Collections.games).add({
     players: [gameRequest.from, gameRequest.to],
-    rounds: [
-      {
-        playerCards: {
-          [gameRequest.from]: {
-            hand: [],
-            laid: [],
-          },
-          [gameRequest.to]: {
-            hand: [],
-            laid: [],
-          },
-        },
-        deck: [],
-        discard: [],
-      },
-    ],
+    rounds: [initializeFirstRound(gameRequest)],
     status: GameStatus.ongoing,
   });
 }
@@ -271,4 +225,25 @@ export function useCurrentGames(): Game[] {
   }, [user, setGames]);
 
   return games;
+}
+
+export async function drawCard(game: Game, currentUid: string) {
+  const currentRound = game.rounds[game.rounds.length - 1];
+  const drawnCard = currentRound.deck[0];
+  const updatedRound = {
+    ...currentRound,
+    deck: currentRound.deck.slice(1),
+    playerCards: {
+      ...currentRound.playerCards,
+      [currentUid]: {
+        ...currentRound.playerCards[currentUid],
+        hand: [...currentRound.playerCards[currentUid].hand, drawnCard],
+      },
+    },
+  };
+  db.collection(Collections.games)
+    .doc(game.id)
+    .update({
+      rounds: [...game.rounds.slice(0, game.rounds.length - 1), updatedRound],
+    });
 }

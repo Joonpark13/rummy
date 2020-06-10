@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { ListItem, ListItemText, Button } from '@material-ui/core';
-import { Game, useUser, useCurrentUser } from './firebase';
+import { ListItem, ListItemText } from '@material-ui/core';
+import { useUser, useCurrentUser } from './firebase';
+import { Game } from './types';
 import GameDialog from './GameDialog';
 
 type CurrentGameListItemProps = {

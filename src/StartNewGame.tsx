@@ -43,6 +43,7 @@ export default function StartNewGame() {
       const { uid: recipientUid } = await findUserByEmail(recipientEmail);
       const senderUid = user.uid;
       createGameRequest(recipientUid, senderUid);
+      setEmail('');
       setSnackbarOpen(true);
     }
   }

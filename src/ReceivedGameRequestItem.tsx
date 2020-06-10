@@ -6,7 +6,8 @@ import {
   IconButton,
 } from '@material-ui/core';
 import { PlayArrow } from '@material-ui/icons';
-import { useUser, GameRequest, createGame } from './firebase';
+import { useUser, createGame } from './firebase';
+import { GameRequest } from './types';
 
 type ReceivedGameRequestItemProps = {
   gameRequest: GameRequest;
