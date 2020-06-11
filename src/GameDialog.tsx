@@ -86,6 +86,7 @@ export default function GameDialog({
           game={game}
           opponent={opponent}
           onChange={() => setYourHandOpen(!yourHandOpen)}
+          onLayDown={() => setYourHandOpen(true)}
           onIllegalAction={showIllegalActionModal}
         />
       </Box>

@@ -11,7 +11,7 @@ import {
 import { ExpandLess } from '@material-ui/icons';
 import Card from './components/Card';
 import { Round, Card as CardType, Game, User } from './types';
-import { useCurrentUser, layDown } from './firebase';
+import { useCurrentUser, layDown, discard } from './firebase';
 import { isSameCard, isValidSet, canAddMultipleCardsToSet } from './util';
 
 function selectionIncludesCard(selectedCards: CardType[], card: CardType) {
@@ -24,6 +24,7 @@ type YourHandProps = {
   game: Game;
   opponent: User;
   onChange: () => void;
+  onLayDown: () => void;
   onIllegalAction: () => void;
 };
 
@@ -33,6 +34,7 @@ export default function YourHand({
   game,
   opponent,
   onChange,
+  onLayDown,
   onIllegalAction,
 }: YourHandProps) {
   const [selectedCards, setSelectedCards] = useState<CardType[]>([]);
@@ -69,9 +71,17 @@ export default function YourHand({
       if (handIsValid || canAddToOpponentSet || canAddToYourSet) {
         layDown(selectedCards, currentUser.uid, game);
         setSelectedCards([]);
+        onLayDown();
       } else {
         onIllegalAction();
       }
+    }
+  }
+
+  function handleDiscard() {
+    if (currentUser) {
+      discard(selectedCards[0], game, currentUser.uid);
+      setSelectedCards([]);
     }
   }
 
@@ -100,7 +110,11 @@ export default function YourHand({
           </Button>
         ) : (
           <>
-            <Button size="small" disabled={selectedCards.length !== 1}>
+            <Button
+              size="small"
+              disabled={selectedCards.length !== 1}
+              onClick={handleDiscard}
+            >
               Discard
             </Button>
             <Button size="small" color="primary" onClick={handleLayDown}>

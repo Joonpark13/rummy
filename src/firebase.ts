@@ -326,3 +326,21 @@ export function layDown(selectedCards: Card[], currentUid: string, game: Game) {
   };
   updateRound(game, updatedRound);
 }
+
+export function discard(selectedCard: Card, game: Game, currentUid: string) {
+  const currentRound = getCurrentRound(game);
+  const currentHand = currentRound.playerCards[currentUid].hand;
+  const newHand = currentHand.filter((card) => !isSameCard(selectedCard, card));
+  const updatedRound = {
+    ...currentRound,
+    discard: [...currentRound.discard, selectedCard],
+    playerCards: {
+      ...currentRound.playerCards,
+      [currentUid]: {
+        ...currentRound.playerCards[currentUid],
+        hand: newHand,
+      },
+    },
+  };
+  updateRound(game, updatedRound);
+}
