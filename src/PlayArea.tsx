@@ -37,20 +37,16 @@ export default function PlayArea({
   const currentPhase = currentRound.turn.phase;
 
   function canPickUp(pickUpCardIndex: number) {
-    if (pickUpCardIndex === currentRound.discard.length - 1) {
-      return true;
-    }
     if (!currentUser) {
       return false;
+    }
+    if (pickUpCardIndex === currentRound.discard.length - 1) {
+      return true;
     }
     const pickedUpCards = currentRound.discard.slice(pickUpCardIndex);
     const mustPlayCard = pickedUpCards[0];
 
-    const playersCards = Object.values(currentRound.playerCards);
-    const allPlayedSets = [
-      ...Object.values(playersCards[0].laid),
-      ...Object.values(playersCards[1].laid),
-    ];
+    const allPlayedSets = Object.values(currentRound.table);
     const canAddToExistingSet = canAddToSet(mustPlayCard, allPlayedSets);
 
     const wouldBeHand = [

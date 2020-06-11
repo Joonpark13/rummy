@@ -82,7 +82,11 @@ export default function StartNewGame() {
         onClose={handleSnackbarClose}
         message="Request sent."
         action={
-          <IconButton size="small" onClick={() => setSnackbarOpen(false)}>
+          <IconButton
+            size="small"
+            color="inherit"
+            onClick={() => setSnackbarOpen(false)}
+          >
             <Close />
           </IconButton>
         }

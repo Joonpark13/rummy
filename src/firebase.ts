@@ -15,6 +15,8 @@ import {
   Round,
   Card,
   Phase,
+  Table,
+  MatchSet,
 } from './types';
 import {
   getCurrentRound,
@@ -188,11 +190,9 @@ function initializeRound(firstPlayerUid: string, secondPlayerUid: string) {
     playerCards: {
       [firstPlayerUid]: {
         hand: shuffledDeck.slice(0, HAND_SIZE),
-        laid: [],
       },
       [secondPlayerUid]: {
         hand: shuffledDeck.slice(HAND_SIZE, HAND_SIZE * 2),
-        laid: [],
       },
     },
     discard: [shuffledDeck[HAND_SIZE * 2]],
@@ -202,6 +202,7 @@ function initializeRound(firstPlayerUid: string, secondPlayerUid: string) {
       phase: Phase.startPhase,
       mustPlayCard: null,
     },
+    table: {},
   };
 }
 
@@ -236,7 +237,7 @@ function useGames(status: GameStatus) {
           );
         });
     }
-  }, [user, setGames]);
+  }, [user, setGames, status]);
 
   return games;
 }
@@ -305,26 +306,34 @@ export function pickUpDiscards(
   updateRound(game, updatedRound);
 }
 
-function sortCards(cards: Card[]) {
-  return cards.sort((a, b) => a.value - b.value);
+function sortMatchSet(matchSet: Array<{ owner: string; card: Card }>) {
+  return matchSet.sort((a, b) => a.card.value - b.card.value);
 }
 
 function insertCardsIntoTable(
-  currentTable: { [index: number]: Card[] },
-  selectedCards: Card[]
-) {
-  const newTable: { [index: number]: Card[] } = {};
+  currentTable: Table,
+  selectedCards: Card[],
+  currentUid: string
+): Table {
+  const newTable: { [index: number]: MatchSet } = {};
+  const cardsToMatchSet = selectedCards.map((card) => ({
+    owner: currentUid,
+    card,
+  }));
   let inserted = false;
   Object.values(currentTable).forEach((set, index) => {
-    if (isValidSet([...set, ...selectedCards])) {
-      newTable[index] = sortCards([...set, ...selectedCards]);
+    const cardsInSet = set.map(({ card }) => card);
+    if (isValidSet([...cardsInSet, ...selectedCards])) {
+      newTable[index] = sortMatchSet([...set, ...cardsToMatchSet]);
       inserted = true;
     } else {
       newTable[index] = set;
     }
   });
   if (!inserted) {
-    newTable[Object.values(currentTable).length] = sortCards(selectedCards);
+    newTable[Object.values(currentTable).length] = sortMatchSet(
+      cardsToMatchSet
+    );
   }
   return newTable;
 }
@@ -337,8 +346,12 @@ export function layDown(selectedCards: Card[], currentUid: string, game: Game) {
       !selectedCards.some((selectedCard) => isSameCard(selectedCard, card))
   );
 
-  const currentTable = currentRound.playerCards[currentUid].laid;
-  const newTable = insertCardsIntoTable(currentTable, selectedCards);
+  const currentTable = currentRound.table;
+  const newTable = insertCardsIntoTable(
+    currentTable,
+    selectedCards,
+    currentUid
+  );
 
   const mustPlayCard = currentRound.turn.mustPlayCard;
   const playedMustPlayCard =
@@ -354,13 +367,13 @@ export function layDown(selectedCards: Card[], currentUid: string, game: Game) {
       [currentUid]: {
         ...currentRound.playerCards[currentUid],
         hand: newHand,
-        laid: newTable,
       },
     },
     turn: {
       ...currentRound.turn,
       mustPlayCard: playedMustPlayCard ? null : mustPlayCard,
     },
+    table: newTable,
   };
   updateRound(game, updatedRound);
 }

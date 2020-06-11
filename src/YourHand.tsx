@@ -19,6 +19,7 @@ import {
   canAddMultipleCardsToSet,
   getCardDisplayValue,
   getCardDisplaySuit,
+  getUserMatchSets,
 } from './util';
 
 const StyledExpansionPanelDetails = styled(ExpansionPanelDetails)`
@@ -55,8 +56,6 @@ export default function YourHand({
   }
 
   const yourHand = round.playerCards[currentUser.uid].hand;
-  const opponentTable = round.playerCards[opponent.uid].laid;
-  const yourTable = round.playerCards[currentUser.uid].laid;
   const yourTurn = round.turn.player === currentUser.uid;
   const mustPlayCard = round.turn.mustPlayCard;
   const currentPhase = round.turn.phase;
@@ -74,15 +73,14 @@ export default function YourHand({
   function handleLayDown() {
     if (currentUser) {
       const handIsValid = isValidSet(selectedCards);
-      const canAddToOpponentSet = canAddMultipleCardsToSet(
+      const canAddToExistingSet = canAddMultipleCardsToSet(
         selectedCards,
-        Object.values(opponentTable)
+        Object.values(round.table)
       );
-      const canAddToYourSet = canAddMultipleCardsToSet(
-        selectedCards,
-        Object.values(yourTable)
-      );
-      if (handIsValid || canAddToOpponentSet || canAddToYourSet) {
+      if (
+        (handIsValid || canAddToExistingSet) &&
+        selectedCards.length !== yourHand.length
+      ) {
         layDown(selectedCards, currentUser.uid, game);
         setSelectedCards([]);
         onLayDown();

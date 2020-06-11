@@ -44,14 +44,20 @@ export type Turn = {
   mustPlayCard: Card | null;
 };
 
+export type MatchSet = Array<{ owner: string; card: Card }>;
+
+export type Table = {
+  [index: number]: MatchSet;
+};
+
 export type Round = {
   deck: Card[];
   discard: Card[];
   turn: Turn;
+  table: Table;
   playerCards: {
     [uid: string]: {
       hand: Card[];
-      laid: { [index: number]: Card[] };
     };
   };
 };

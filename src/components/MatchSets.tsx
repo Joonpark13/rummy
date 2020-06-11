@@ -1,22 +1,22 @@
 import React from 'react';
 import { Typography, Box } from '@material-ui/core';
 import MatchSet from './MatchSet';
-import { Card } from '../types';
+import { MatchSet as MatchSetType } from '../types';
 
-type TableProps = {
+type MatchSetsProps = {
   title: string;
-  table: { [index: number]: Card[] };
+  matchSets: MatchSetType[];
 };
 
-export default function Table({ title, table }: TableProps) {
+export default function MatchSets({ title, matchSets }: MatchSetsProps) {
   return (
     <>
       <Typography variant="subtitle1">{title}</Typography>
       <Box display="flex" flexWrap="wrap">
-        {Object.values(table).length === 0 ? (
+        {matchSets.length === 0 ? (
           <Typography variant="caption">No cards laid down.</Typography>
         ) : (
-          Object.values(table).map((matchSet) => (
+          matchSets.map((matchSet) => (
             <Box key={JSON.stringify(matchSet)} mr={1} mb="4px">
               <MatchSet matchSet={matchSet} />
             </Box>

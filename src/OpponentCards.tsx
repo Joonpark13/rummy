@@ -1,8 +1,9 @@
 import React from 'react';
 import { Typography, Box } from '@material-ui/core';
 import EmptyCard from './components/EmptyCard';
-import Table from './components/Table';
+import MatchSets from './components/MatchSets';
 import { Round, User } from './types';
+import { getUserMatchSets } from './util';
 
 type OpponentCardsProps = {
   round: Round;
@@ -12,7 +13,7 @@ type OpponentCardsProps = {
 export default function OpponentCards({ round, opponent }: OpponentCardsProps) {
   const opponentCards = round.playerCards[opponent.uid];
   const opponentHand = opponentCards.hand;
-  const opponentTable = opponentCards.laid;
+  const opponentSets = getUserMatchSets(round.table, opponent.uid);
 
   return (
     <div>
@@ -25,7 +26,10 @@ export default function OpponentCards({ round, opponent }: OpponentCardsProps) {
         ))}
       </Box>
 
-      <Table title={`${opponent.displayName}'s table`} table={opponentTable} />
+      <MatchSets
+        title={`${opponent.displayName}'s table`}
+        matchSets={opponentSets}
+      />
     </div>
   );
 }

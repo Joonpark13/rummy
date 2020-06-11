@@ -1,5 +1,5 @@
 import { combination } from 'js-combinatorics';
-import { Game, Round, Card, Suit } from './types';
+import { Game, Round, Card, Suit, Table, MatchSet } from './types';
 
 export function getCurrentRound(game: Game): Round {
   return game.rounds[game.rounds.length - 1];
@@ -24,12 +24,14 @@ export function isValidSet(cards: Card[]) {
   return allSameSuit && contiguous;
 }
 
-export function canAddToSet(card: Card, sets: Card[][]) {
-  return sets.some((set) => isValidSet([...set, card]));
+export function canAddToSet(card: Card, sets: MatchSet[]) {
+  return sets.some((set) => isValidSet([...set.map(({ card: c }) => c), card]));
 }
 
-export function canAddMultipleCardsToSet(cards: Card[], sets: Card[][]) {
-  return sets.some((set) => isValidSet([...set, ...cards]));
+export function canAddMultipleCardsToSet(cards: Card[], sets: MatchSet[]) {
+  return sets.some((set) =>
+    isValidSet([...set.map(({ card }) => card), ...cards])
+  );
 }
 
 export function isSameCard(card1: Card, card2: Card) {
@@ -107,11 +109,15 @@ export function calculateRoundScores(
     let yourScore = 0;
     let opponentScore = 0;
     yourScore += calculateScore(
-      Object.values(round.playerCards[currentUid].laid).flat()
+      getUserMatchSets(round.table, currentUid)
+        .flat()
+        .map(({ card }) => card)
     );
     yourScore -= calculateScore(round.playerCards[currentUid].hand);
     opponentScore += calculateScore(
-      Object.values(round.playerCards[opponentUid].laid).flat()
+      getUserMatchSets(round.table, opponentUid)
+        .flat()
+        .map(({ card }) => card)
     );
     opponentScore -= calculateScore(round.playerCards[opponentUid].hand);
     const scores: [number, number] = [yourScore, opponentScore];
@@ -132,4 +138,15 @@ export function calculateRoundScoreSums(
     .map((score) => score[1])
     .reduce((total, score) => total + score, 0);
   return [yourTotalScore, opponentTotalScore];
+}
+
+export function getUserMatchSets(table: Table, uid: string): MatchSet[] {
+  const result: MatchSet[] = [];
+  Object.values(table).forEach((set) => {
+    const filteredSet = set.filter(({ owner }) => owner === uid);
+    if (filteredSet.length > 0) {
+      result.push(filteredSet);
+    }
+  });
+  return result;
 }

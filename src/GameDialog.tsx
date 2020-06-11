@@ -15,7 +15,7 @@ import { Game, User, GameStatus } from './types';
 import RoundSummary from './RoundSummary';
 import OpponentCards from './OpponentCards';
 import PlayArea from './PlayArea';
-import YourTable from './YourTable';
+import YourMatchSets from './YourMatchSets';
 import YourHand from './YourHand';
 import { getCurrentRound, calculateRoundScoreSums } from './util';
 import { useCurrentUser } from './firebase';
@@ -102,7 +102,7 @@ export default function GameDialog({
               onAction={() => setYourHandOpen(true)}
               onIllegalAction={showIllegalActionModal}
             />
-            <YourTable round={currentRound} />
+            <YourMatchSets round={currentRound} />
           </Box>
 
           <Box position="fixed" bottom={0} width="100%">
