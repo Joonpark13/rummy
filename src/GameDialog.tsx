@@ -1,5 +1,15 @@
 import React, { useState } from 'react';
-import { Dialog, AppBar, Toolbar, IconButton, Box } from '@material-ui/core';
+import {
+  Dialog,
+  AppBar,
+  Toolbar,
+  IconButton,
+  Box,
+  DialogTitle,
+  DialogActions,
+  Button,
+  Typography,
+} from '@material-ui/core';
 import { ArrowBack } from '@material-ui/icons';
 import { Game, User } from './types';
 import RoundSummary from './RoundSummary';
@@ -7,6 +17,7 @@ import OpponentCards from './OpponentCards';
 import PlayArea from './PlayArea';
 import YourTable from './YourTable';
 import YourHand from './YourHand';
+import { getCurrentRound } from './util';
 
 type GameDialogProps = {
   open: boolean;
@@ -22,8 +33,13 @@ export default function GameDialog({
   onClose,
 }: GameDialogProps) {
   const [yourHandOpen, setYourHandOpen] = useState(false);
+  const [illegalActionModalOpen, setIllegalActionModalOpen] = useState(false);
 
-  const currentRound = game.rounds[game.rounds.length - 1];
+  const currentRound = getCurrentRound(game);
+
+  function closeIllegalActionModal() {
+    setIllegalActionModalOpen(false);
+  }
 
   return (
     <Dialog fullScreen open={open} onClose={onClose}>
@@ -32,6 +48,12 @@ export default function GameDialog({
           <IconButton edge="start" color="inherit" onClick={onClose}>
             <ArrowBack />
           </IconButton>
+          <Typography variant="h6">
+            {currentRound.turn === opponent.uid
+              ? `${opponent.displayName}'s`
+              : 'Your'}{' '}
+            Turn
+          </Typography>
         </Toolbar>
       </AppBar>
 
@@ -45,7 +67,11 @@ export default function GameDialog({
         justifyContent="space-between"
       >
         <OpponentCards round={currentRound} opponent={opponent} />
-        <PlayArea game={game} onDraw={() => setYourHandOpen(true)} />
+        <PlayArea
+          game={game}
+          onAction={() => setYourHandOpen(true)}
+          onIllegalAction={() => setIllegalActionModalOpen(true)}
+        />
         <YourTable round={currentRound} />
       </Box>
 
@@ -56,6 +82,13 @@ export default function GameDialog({
           onChange={() => setYourHandOpen(!yourHandOpen)}
         />
       </Box>
+
+      <Dialog open={illegalActionModalOpen} onClose={closeIllegalActionModal}>
+        <DialogTitle>That action is not allowed.</DialogTitle>
+        <DialogActions>
+          <Button onClick={closeIllegalActionModal}>Close</Button>
+        </DialogActions>
+      </Dialog>
     </Dialog>
   );
 }

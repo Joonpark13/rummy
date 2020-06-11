@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { Paper, Box, Typography } from '@material-ui/core';
+import { Paper, Typography } from '@material-ui/core';
 
 const StyledPaper = styled(Paper)`
   width: 28px;

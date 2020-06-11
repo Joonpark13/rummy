@@ -12,7 +12,9 @@ import {
   GameRequest,
   GameStatus,
   Game,
+  Round,
 } from './types';
+import { getCurrentRound } from './util';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyCUX6oYXngvqjDR29JBam1LPa2FoaZmRA8',
@@ -227,8 +229,16 @@ export function useCurrentGames(): Game[] {
   return games;
 }
 
+function updateRound(game: Game, updatedRound: Round) {
+  db.collection(Collections.games)
+    .doc(game.id)
+    .update({
+      rounds: [...game.rounds.slice(0, game.rounds.length - 1), updatedRound],
+    });
+}
+
 export async function drawCard(game: Game, currentUid: string) {
-  const currentRound = game.rounds[game.rounds.length - 1];
+  const currentRound = getCurrentRound(game);
   const drawnCard = currentRound.deck[0];
   const updatedRound = {
     ...currentRound,
@@ -241,9 +251,28 @@ export async function drawCard(game: Game, currentUid: string) {
       },
     },
   };
-  db.collection(Collections.games)
-    .doc(game.id)
-    .update({
-      rounds: [...game.rounds.slice(0, game.rounds.length - 1), updatedRound],
-    });
+  updateRound(game, updatedRound);
+}
+
+export function pickUpDiscards(
+  selectedCardIndex: number,
+  game: Game,
+  currentUid: string
+): void {
+  const currentRound = getCurrentRound(game);
+  const updatedRound = {
+    ...currentRound,
+    discard: currentRound.discard.slice(0, selectedCardIndex),
+    playerCards: {
+      ...currentRound.playerCards,
+      [currentUid]: {
+        ...currentRound.playerCards[currentUid],
+        hand: [
+          ...currentRound.playerCards[currentUid].hand,
+          ...currentRound.discard.slice(selectedCardIndex),
+        ],
+      },
+    },
+  };
+  updateRound(game, updatedRound);
 }

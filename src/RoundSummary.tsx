@@ -17,7 +17,7 @@ type RoundSummaryProps = {
 };
 
 function roundEnded(round: Round): boolean {
-  if (round.deck.length == 0) {
+  if (round.deck.length === 0) {
     return true;
   }
   const anyPlayerHasEmptyHand = Object.values(round.playerCards)

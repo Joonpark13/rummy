@@ -1,10 +1,13 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Paper, SvgIcon, Box, Typography } from '@material-ui/core';
+import { useTheme } from '@material-ui/core/styles';
 import { Card as CardType, Suit } from '../types';
 
 const StyledPaper = styled(Paper)`
   width: 28px;
+  ${({ selected, primaryColor }: { selected: boolean; primaryColor: string }) =>
+    selected ? `border: 2px solid ${primaryColor};` : ''}
 `;
 
 const icons: { [suit: string]: React.ReactNode } = {
@@ -46,9 +49,25 @@ function displayValue(value: number) {
   return value;
 }
 
-export default function Card({ suit, value }: CardType) {
+type CardProps = CardType & {
+  selected?: boolean;
+  onClick?: () => void;
+};
+
+export default function Card({
+  suit,
+  value,
+  selected = false,
+  onClick,
+}: CardProps) {
+  const theme = useTheme();
   return (
-    <StyledPaper elevation={2}>
+    <StyledPaper
+      selected={selected}
+      primaryColor={theme.palette.primary.main}
+      elevation={2}
+      onClick={onClick}
+    >
       <Box p="4px" display="flex" flexDirection="column" alignItems="center">
         {icons[suit]}
         <Typography variant="body1">{displayValue(value)}</Typography>
