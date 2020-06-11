@@ -212,6 +212,7 @@ export function createGame(gameRequest: GameRequest): void {
     players: [gameRequest.from, gameRequest.to],
     rounds: [initializeRound(gameRequest.from, gameRequest.to)],
     status: GameStatus.ongoing,
+    startTime: firebase.firestore.Timestamp.fromDate(new Date()),
   });
 }
 

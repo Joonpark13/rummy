@@ -67,6 +67,7 @@ export type Game = {
   players: string[];
   rounds: Round[];
   status: GameStatus;
+  startTime: firebase.firestore.Timestamp;
 };
 
 export enum Suit {
