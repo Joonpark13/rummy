@@ -33,10 +33,21 @@ export type Card = {
   value: number;
 };
 
+export enum Phase {
+  startPhase = 'START_PHASE',
+  playPhase = 'PLAY_PHASE',
+}
+
+export type Turn = {
+  player: string;
+  phase: Phase;
+  mustPlayCard: Card | null;
+};
+
 export type Round = {
   deck: Card[];
   discard: Card[];
-  turn: string;
+  turn: Turn;
   playerCards: {
     [uid: string]: {
       hand: Card[];

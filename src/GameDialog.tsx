@@ -53,7 +53,7 @@ export default function GameDialog({
             <ArrowBack />
           </IconButton>
           <Typography variant="h6">
-            {currentRound.turn === opponent.uid
+            {currentRound.turn.player === opponent.uid
               ? `${opponent.displayName}'s`
               : 'Your'}{' '}
             Turn

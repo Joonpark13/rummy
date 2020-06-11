@@ -8,7 +8,7 @@ import {
 } from '@material-ui/core';
 import Card from './components/Card';
 import { drawCard, useCurrentUser, pickUpDiscards } from './firebase';
-import { Game } from './types';
+import { Game, Phase } from './types';
 import {
   getCurrentRound,
   containsValidSetUsingCard,
@@ -33,6 +33,8 @@ export default function PlayArea({
   }
 
   const currentRound = getCurrentRound(game);
+  const isYourTurn = currentRound.turn.player === currentUser.uid;
+  const currentPhase = currentRound.turn.phase;
 
   function canPickUp(pickUpCardIndex: number) {
     if (pickUpCardIndex === currentRound.discard.length - 1) {
@@ -100,18 +102,18 @@ export default function PlayArea({
               suit={card.suit}
               value={card.value}
               selected={pickUpCardIndex !== null && index >= pickUpCardIndex}
-              onClick={() => handleSelect(index)}
+              onClick={isYourTurn && currentPhase === Phase.startPhase ? () => handleSelect(index) : undefined}
             />
           ))}
         </Box>
       </CardContent>
       <CardActions>
         {pickUpCardIndex === null ? (
-          <Button color="primary" onClick={handleDraw}>
+          <Button color="primary" disabled={!isYourTurn || currentPhase !== Phase.startPhase} onClick={handleDraw}>
             Draw from deck
           </Button>
         ) : (
-          <Button color="primary" onClick={handlePickUp}>
+          <Button color="primary" disabled={currentPhase !== Phase.startPhase} onClick={handlePickUp}>
             Pick up selected
           </Button>
         )}

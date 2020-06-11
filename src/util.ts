@@ -1,5 +1,5 @@
 import { combination } from 'js-combinatorics';
-import { Game, Round, Card } from './types';
+import { Game, Round, Card, Suit } from './types';
 
 export function getCurrentRound(game: Game): Round {
   return game.rounds[game.rounds.length - 1];
@@ -49,4 +49,33 @@ export function containsValidSetUsingCard(hand: Card[], card: Card) {
     }
   }
   return false;
+}
+
+export function getCardDisplayValue(value: number) {
+  if (value === 1) {
+    return 'A';
+  }
+  if (value === 11) {
+    return 'J';
+  }
+  if (value === 12) {
+    return 'Q';
+  }
+  if (value === 13) {
+    return 'K';
+  }
+  return value;
+}
+
+export function getCardDisplaySuit(suit: Suit): string {
+  switch(suit) {
+    case Suit.spade:
+      return 'Spades';
+    case Suit.diamond:
+      return 'Diamonds';
+    case Suit.heart:
+      return 'Hearts';
+    default:
+      return 'Clubs';
+  }
 }

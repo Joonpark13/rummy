@@ -14,6 +14,7 @@ import {
   Game,
   Round,
   Card,
+  Phase,
 } from './types';
 import { getCurrentRound, isSameCard, isValidSet } from './util';
 
@@ -191,7 +192,11 @@ function initializeFirstRound(gameRequest: GameRequest) {
     },
     discard: [shuffledDeck[HAND_SIZE * 2]],
     deck: shuffledDeck.slice(HAND_SIZE * 2 + 1),
-    turn: gameRequest.from,
+    turn: {
+      player: gameRequest.from,
+      phase: Phase.startPhase,
+      mustPlayCard: null,
+    },
   };
 }
 
@@ -251,6 +256,10 @@ export async function drawCard(game: Game, currentUid: string) {
         hand: [...currentRound.playerCards[currentUid].hand, drawnCard],
       },
     },
+    turn: {
+      ...currentRound.turn,
+      phase: Phase.playPhase,
+    }
   };
   updateRound(game, updatedRound);
 }
@@ -261,6 +270,8 @@ export function pickUpDiscards(
   currentUid: string
 ): void {
   const currentRound = getCurrentRound(game);
+  const cardsPickedUp = currentRound.discard.slice(selectedCardIndex);
+  const mustPlayCard = cardsPickedUp.length === 1 ? null : cardsPickedUp[0];
   const updatedRound = {
     ...currentRound,
     discard: currentRound.discard.slice(0, selectedCardIndex),
@@ -270,10 +281,15 @@ export function pickUpDiscards(
         ...currentRound.playerCards[currentUid],
         hand: [
           ...currentRound.playerCards[currentUid].hand,
-          ...currentRound.discard.slice(selectedCardIndex),
+          ...cardsPickedUp,
         ],
       },
     },
+    turn: {
+      ...currentRound.turn,
+      phase: Phase.playPhase,
+      mustPlayCard,
+    }
   };
   updateRound(game, updatedRound);
 }
@@ -327,7 +343,7 @@ export function layDown(selectedCards: Card[], currentUid: string, game: Game) {
   updateRound(game, updatedRound);
 }
 
-export function discard(selectedCard: Card, game: Game, currentUid: string) {
+export function discard(selectedCard: Card, game: Game, currentUid: string, opponentUid: string) {
   const currentRound = getCurrentRound(game);
   const currentHand = currentRound.playerCards[currentUid].hand;
   const newHand = currentHand.filter((card) => !isSameCard(selectedCard, card));
@@ -341,6 +357,12 @@ export function discard(selectedCard: Card, game: Game, currentUid: string) {
         hand: newHand,
       },
     },
+    turn: {
+      ...currentRound.turn,
+      player: opponentUid,
+      phase: Phase.startPhase,
+      mustPlayCard: null,
+    }
   };
   updateRound(game, updatedRound);
 }

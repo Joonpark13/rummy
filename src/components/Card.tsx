@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { Paper, SvgIcon, Box, Typography } from '@material-ui/core';
 import { useTheme } from '@material-ui/core/styles';
 import { Card as CardType, Suit } from '../types';
+import { getCardDisplayValue } from '../util';
 
 const StyledPaper = styled(Paper)`
   width: 28px;
@@ -33,22 +34,6 @@ const icons: { [suit: string]: React.ReactNode } = {
   ),
 };
 
-function displayValue(value: number) {
-  if (value === 1) {
-    return 'A';
-  }
-  if (value === 11) {
-    return 'J';
-  }
-  if (value === 12) {
-    return 'Q';
-  }
-  if (value === 13) {
-    return 'K';
-  }
-  return value;
-}
-
 type CardProps = CardType & {
   selected?: boolean;
   onClick?: () => void;
@@ -70,7 +55,7 @@ export default function Card({
     >
       <Box p="4px" display="flex" flexDirection="column" alignItems="center">
         {icons[suit]}
-        <Typography variant="body1">{displayValue(value)}</Typography>
+        <Typography variant="body1">{getCardDisplayValue(value)}</Typography>
       </Box>
     </StyledPaper>
   );

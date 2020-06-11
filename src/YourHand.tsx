@@ -10,9 +10,9 @@ import {
 } from '@material-ui/core';
 import { ExpandLess } from '@material-ui/icons';
 import Card from './components/Card';
-import { Round, Card as CardType, Game, User } from './types';
+import { Round, Card as CardType, Game, User, Phase } from './types';
 import { useCurrentUser, layDown, discard } from './firebase';
-import { isSameCard, isValidSet, canAddMultipleCardsToSet } from './util';
+import { isSameCard, isValidSet, canAddMultipleCardsToSet, getCardDisplayValue, getCardDisplaySuit } from './util';
 
 function selectionIncludesCard(selectedCards: CardType[], card: CardType) {
   return selectedCards.some((selectedCard) => isSameCard(card, selectedCard));
@@ -46,6 +46,9 @@ export default function YourHand({
   const yourHand = round.playerCards[currentUser.uid].hand;
   const opponentTable = round.playerCards[opponent.uid].laid;
   const yourTable = round.playerCards[currentUser.uid].laid;
+  const yourTurn = round.turn.player === currentUser.uid;
+  const mustPlayCard = round.turn.mustPlayCard;
+  const currentPhase = round.turn.phase;
 
   function handleSelect(card: CardType) {
     if (selectionIncludesCard(selectedCards, card)) {
@@ -80,7 +83,7 @@ export default function YourHand({
 
   function handleDiscard() {
     if (currentUser) {
-      discard(selectedCards[0], game, currentUser.uid);
+      discard(selectedCards[0], game, currentUser.uid, opponent.uid);
       setSelectedCards([]);
     }
   }
@@ -91,6 +94,13 @@ export default function YourHand({
         <Typography variant="body1">Your hand</Typography>
       </ExpansionPanelSummary>
       <ExpansionPanelDetails>
+        {yourTurn && mustPlayCard && (
+          <Box mb="2px">
+            <Typography variant="caption" color="error">
+              You must play the {getCardDisplayValue(mustPlayCard.value)} of {getCardDisplaySuit(mustPlayCard.suit)}.
+            </Typography>
+          </Box>
+        )}
         <Box display="flex" flexWrap="wrap">
           {yourHand.map((card) => (
             <Card
@@ -98,30 +108,22 @@ export default function YourHand({
               suit={card.suit}
               value={card.value}
               selected={selectionIncludesCard(selectedCards, card)}
-              onClick={() => handleSelect(card)}
+              onClick={yourTurn ? () => handleSelect(card) : undefined}
             />
           ))}
         </Box>
       </ExpansionPanelDetails>
       <ExpansionPanelActions>
-        {selectedCards.length === 0 ? (
-          <Button size="small" color="primary">
-            End Turn
-          </Button>
-        ) : (
-          <>
-            <Button
-              size="small"
-              disabled={selectedCards.length !== 1}
-              onClick={handleDiscard}
-            >
-              Discard
-            </Button>
-            <Button size="small" color="primary" onClick={handleLayDown}>
-              Lay down
-            </Button>
-          </>
-        )}
+        <Button size="small" color="primary" disabled={!yourTurn || selectedCards.length < 1} onClick={handleLayDown}>
+          Lay down
+        </Button>
+        <Button
+          size="small"
+          disabled={!yourTurn || selectedCards.length !== 1 || currentPhase !== Phase.playPhase}
+          onClick={handleDiscard}
+        >
+          Discard
+        </Button>
       </ExpansionPanelActions>
     </ExpansionPanel>
   );
