@@ -4,13 +4,11 @@ import { useUser, useCurrentUser } from './firebase';
 import { Game } from './types';
 import GameDialog from './GameDialog';
 
-type CurrentGameListItemProps = {
+type GameListItemProps = {
   game: Game;
 };
 
-export default function CurrentGameListItem({
-  game,
-}: CurrentGameListItemProps) {
+export default function GameListItem({ game }: GameListItemProps) {
   const currentUser = useCurrentUser();
   const opponentId = currentUser
     ? game.players.find((playerId) => playerId !== currentUser.uid)

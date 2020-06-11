@@ -7,7 +7,9 @@ import {
   Dialog,
   DialogTitle,
   DialogActions,
+  IconButton,
 } from '@material-ui/core';
+import { Close } from '@material-ui/icons';
 import {
   useCurrentUser,
   userEmailExists,
@@ -79,6 +81,11 @@ export default function StartNewGame() {
         autoHideDuration={5000}
         onClose={handleSnackbarClose}
         message="Request sent."
+        action={
+          <IconButton size="small" onClick={() => setSnackbarOpen(false)}>
+            <Close />
+          </IconButton>
+        }
       />
       <Dialog open={dialogOpen} onClose={handleDialogClose}>
         <DialogTitle>{failureMessage}</DialogTitle>

@@ -14,7 +14,7 @@ export function isValidSet(cards: Card[]) {
   }
   const allSameSuit = cards.every((card) => card.suit === cards[0].suit);
   const cardValues = cards.map((card) => card.value);
-  cardValues.sort();
+  cardValues.sort((a, b) => a - b);
   const contiguous = cardValues.every((value, index) => {
     if (index === 0) {
       return true;
@@ -68,7 +68,7 @@ export function getCardDisplayValue(value: number) {
 }
 
 export function getCardDisplaySuit(suit: Suit): string {
-  switch(suit) {
+  switch (suit) {
     case Suit.spade:
       return 'Spades';
     case Suit.diamond:
@@ -78,4 +78,58 @@ export function getCardDisplaySuit(suit: Suit): string {
     default:
       return 'Clubs';
   }
+}
+
+function getCardScoreValue(card: Card): number {
+  if (card.value === 1) {
+    return 15;
+  }
+  if (card.value >= 10) {
+    return 10;
+  }
+  return 5;
+}
+
+function calculateScore(cards: Card[]): number {
+  let sum = 0;
+  cards.forEach((card) => {
+    sum += getCardScoreValue(card);
+  });
+  return sum;
+}
+
+export function calculateRoundScores(
+  rounds: Round[],
+  currentUid: string,
+  opponentUid: string
+): Array<[number, number]> {
+  return rounds.map((round) => {
+    let yourScore = 0;
+    let opponentScore = 0;
+    yourScore += calculateScore(
+      Object.values(round.playerCards[currentUid].laid).flat()
+    );
+    yourScore -= calculateScore(round.playerCards[currentUid].hand);
+    opponentScore += calculateScore(
+      Object.values(round.playerCards[opponentUid].laid).flat()
+    );
+    opponentScore -= calculateScore(round.playerCards[opponentUid].hand);
+    const scores: [number, number] = [yourScore, opponentScore];
+    return scores;
+  });
+}
+
+export function calculateRoundScoreSums(
+  rounds: Round[],
+  currentUid: string,
+  opponentUid: string
+) {
+  const scores = calculateRoundScores(rounds, currentUid, opponentUid);
+  const yourTotalScore = scores
+    .map((score) => score[0])
+    .reduce((total, score) => total + score, 0);
+  const opponentTotalScore = scores
+    .map((score) => score[1])
+    .reduce((total, score) => total + score, 0);
+  return [yourTotalScore, opponentTotalScore];
 }

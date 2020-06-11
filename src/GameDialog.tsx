@@ -11,13 +11,14 @@ import {
   Typography,
 } from '@material-ui/core';
 import { ArrowBack } from '@material-ui/icons';
-import { Game, User } from './types';
+import { Game, User, GameStatus } from './types';
 import RoundSummary from './RoundSummary';
 import OpponentCards from './OpponentCards';
 import PlayArea from './PlayArea';
 import YourTable from './YourTable';
 import YourHand from './YourHand';
-import { getCurrentRound } from './util';
+import { getCurrentRound, calculateRoundScoreSums } from './util';
+import { useCurrentUser } from './firebase';
 
 type GameDialogProps = {
   open: boolean;
@@ -25,6 +26,28 @@ type GameDialogProps = {
   opponent: User;
   onClose: () => void;
 };
+
+function getHeaderText(game: Game, currentUid: string, opponent: User) {
+  if (game.status === GameStatus.ended) {
+    const [yourScore, opponentScore] = calculateRoundScoreSums(
+      game.rounds,
+      currentUid,
+      opponent.uid
+    );
+    if (yourScore > opponentScore) {
+      return 'You won!';
+    }
+    if (opponentScore > yourScore) {
+      return 'You lost.';
+    }
+    return 'You tied.';
+  }
+  const currentRound = getCurrentRound(game);
+  if (currentRound.turn.player === opponent.uid) {
+    return `${opponent.displayName}'s Turn`;
+  }
+  return 'Your Turn';
+}
 
 export default function GameDialog({
   open,
@@ -34,6 +57,7 @@ export default function GameDialog({
 }: GameDialogProps) {
   const [yourHandOpen, setYourHandOpen] = useState(false);
   const [illegalActionModalOpen, setIllegalActionModalOpen] = useState(false);
+  const currentUser = useCurrentUser();
 
   const currentRound = getCurrentRound(game);
 
@@ -45,6 +69,9 @@ export default function GameDialog({
     setIllegalActionModalOpen(false);
   }
 
+  if (!currentUser) {
+    return null;
+  }
   return (
     <Dialog fullScreen open={open} onClose={onClose}>
       <AppBar position="sticky">
@@ -53,50 +80,54 @@ export default function GameDialog({
             <ArrowBack />
           </IconButton>
           <Typography variant="h6">
-            {currentRound.turn.player === opponent.uid
-              ? `${opponent.displayName}'s`
-              : 'Your'}{' '}
-            Turn
+            {getHeaderText(game, currentUser.uid, opponent)}
           </Typography>
         </Toolbar>
       </AppBar>
 
       <RoundSummary game={game} opponent={opponent} />
 
-      <Box
-        p={2}
-        height="100%"
-        display="flex"
-        flexDirection="column"
-        justifyContent="space-between"
-      >
-        <OpponentCards round={currentRound} opponent={opponent} />
-        <PlayArea
-          game={game}
-          onAction={() => setYourHandOpen(true)}
-          onIllegalAction={showIllegalActionModal}
-        />
-        <YourTable round={currentRound} />
-      </Box>
+      {game.status === GameStatus.ongoing && (
+        <>
+          <Box
+            p={2}
+            height="100%"
+            display="flex"
+            flexDirection="column"
+            justifyContent="space-between"
+          >
+            <OpponentCards round={currentRound} opponent={opponent} />
+            <PlayArea
+              game={game}
+              onAction={() => setYourHandOpen(true)}
+              onIllegalAction={showIllegalActionModal}
+            />
+            <YourTable round={currentRound} />
+          </Box>
 
-      <Box position="fixed" bottom={0} width="100%">
-        <YourHand
-          round={currentRound}
-          open={yourHandOpen}
-          game={game}
-          opponent={opponent}
-          onChange={() => setYourHandOpen(!yourHandOpen)}
-          onLayDown={() => setYourHandOpen(true)}
-          onIllegalAction={showIllegalActionModal}
-        />
-      </Box>
+          <Box position="fixed" bottom={0} width="100%">
+            <YourHand
+              round={currentRound}
+              open={yourHandOpen}
+              game={game}
+              opponent={opponent}
+              onChange={() => setYourHandOpen(!yourHandOpen)}
+              onLayDown={() => setYourHandOpen(false)}
+              onIllegalAction={showIllegalActionModal}
+            />
+          </Box>
 
-      <Dialog open={illegalActionModalOpen} onClose={closeIllegalActionModal}>
-        <DialogTitle>That action is not allowed.</DialogTitle>
-        <DialogActions>
-          <Button onClick={closeIllegalActionModal}>Close</Button>
-        </DialogActions>
-      </Dialog>
+          <Dialog
+            open={illegalActionModalOpen}
+            onClose={closeIllegalActionModal}
+          >
+            <DialogTitle>That action is not allowed.</DialogTitle>
+            <DialogActions>
+              <Button onClick={closeIllegalActionModal}>Close</Button>
+            </DialogActions>
+          </Dialog>
+        </>
+      )}
     </Dialog>
   );
 }

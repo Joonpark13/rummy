@@ -16,7 +16,12 @@ import {
   Card,
   Phase,
 } from './types';
-import { getCurrentRound, isSameCard, isValidSet } from './util';
+import {
+  getCurrentRound,
+  isSameCard,
+  isValidSet,
+  calculateRoundScoreSums,
+} from './util';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyCUX6oYXngvqjDR29JBam1LPa2FoaZmRA8',
@@ -177,15 +182,15 @@ export function removeRequest(gameRequest: GameRequest): void {
   db.collection(Collections.requests).doc(gameRequest.id).delete();
 }
 
-function initializeFirstRound(gameRequest: GameRequest) {
+function initializeRound(firstPlayerUid: string, secondPlayerUid: string) {
   const shuffledDeck = shuffle(ORDERED_DECK, { copy: true });
   return {
     playerCards: {
-      [gameRequest.from]: {
+      [firstPlayerUid]: {
         hand: shuffledDeck.slice(0, HAND_SIZE),
         laid: [],
       },
-      [gameRequest.to]: {
+      [secondPlayerUid]: {
         hand: shuffledDeck.slice(HAND_SIZE, HAND_SIZE * 2),
         laid: [],
       },
@@ -193,7 +198,7 @@ function initializeFirstRound(gameRequest: GameRequest) {
     discard: [shuffledDeck[HAND_SIZE * 2]],
     deck: shuffledDeck.slice(HAND_SIZE * 2 + 1),
     turn: {
-      player: gameRequest.from,
+      player: firstPlayerUid,
       phase: Phase.startPhase,
       mustPlayCard: null,
     },
@@ -204,12 +209,12 @@ export function createGame(gameRequest: GameRequest): void {
   removeRequest(gameRequest);
   db.collection(Collections.games).add({
     players: [gameRequest.from, gameRequest.to],
-    rounds: [initializeFirstRound(gameRequest)],
+    rounds: [initializeRound(gameRequest.from, gameRequest.to)],
     status: GameStatus.ongoing,
   });
 }
 
-export function useCurrentGames(): Game[] {
+function useGames(status: GameStatus) {
   const [games, setGames] = useState<Game[]>([]);
   const user = useCurrentUser();
 
@@ -218,6 +223,7 @@ export function useCurrentGames(): Game[] {
       return db
         .collection(Collections.games)
         .where('players', 'array-contains', user.uid)
+        .where('status', '==', status)
         .onSnapshot((querySnapshot) => {
           setGames(
             querySnapshot.docs.map(
@@ -233,6 +239,14 @@ export function useCurrentGames(): Game[] {
   }, [user, setGames]);
 
   return games;
+}
+
+export function useCurrentGames(): Game[] {
+  return useGames(GameStatus.ongoing);
+}
+
+export function usePreviousGames(): Game[] {
+  return useGames(GameStatus.ended);
 }
 
 function updateRound(game: Game, updatedRound: Round) {
@@ -259,7 +273,7 @@ export async function drawCard(game: Game, currentUid: string) {
     turn: {
       ...currentRound.turn,
       phase: Phase.playPhase,
-    }
+    },
   };
   updateRound(game, updatedRound);
 }
@@ -279,17 +293,14 @@ export function pickUpDiscards(
       ...currentRound.playerCards,
       [currentUid]: {
         ...currentRound.playerCards[currentUid],
-        hand: [
-          ...currentRound.playerCards[currentUid].hand,
-          ...cardsPickedUp,
-        ],
+        hand: [...currentRound.playerCards[currentUid].hand, ...cardsPickedUp],
       },
     },
     turn: {
       ...currentRound.turn,
       phase: Phase.playPhase,
       mustPlayCard,
-    }
+    },
   };
   updateRound(game, updatedRound);
 }
@@ -313,7 +324,7 @@ function insertCardsIntoTable(
     }
   });
   if (!inserted) {
-    newTable[Object.values(currentTable).length] = selectedCards;
+    newTable[Object.values(currentTable).length] = sortCards(selectedCards);
   }
   return newTable;
 }
@@ -329,6 +340,13 @@ export function layDown(selectedCards: Card[], currentUid: string, game: Game) {
   const currentTable = currentRound.playerCards[currentUid].laid;
   const newTable = insertCardsIntoTable(currentTable, selectedCards);
 
+  const mustPlayCard = currentRound.turn.mustPlayCard;
+  const playedMustPlayCard =
+    mustPlayCard &&
+    selectedCards.some((selectedCard) =>
+      isSameCard(selectedCard, mustPlayCard)
+    );
+
   const updatedRound = {
     ...currentRound,
     playerCards: {
@@ -339,14 +357,24 @@ export function layDown(selectedCards: Card[], currentUid: string, game: Game) {
         laid: newTable,
       },
     },
+    turn: {
+      ...currentRound.turn,
+      mustPlayCard: playedMustPlayCard ? null : mustPlayCard,
+    },
   };
   updateRound(game, updatedRound);
 }
 
-export function discard(selectedCard: Card, game: Game, currentUid: string, opponentUid: string) {
+export function discard(
+  selectedCard: Card,
+  game: Game,
+  currentUid: string,
+  opponentUid: string
+) {
   const currentRound = getCurrentRound(game);
   const currentHand = currentRound.playerCards[currentUid].hand;
   const newHand = currentHand.filter((card) => !isSameCard(selectedCard, card));
+
   const updatedRound = {
     ...currentRound,
     discard: [...currentRound.discard, selectedCard],
@@ -362,7 +390,34 @@ export function discard(selectedCard: Card, game: Game, currentUid: string, oppo
       player: opponentUid,
       phase: Phase.startPhase,
       mustPlayCard: null,
-    }
+    },
   };
-  updateRound(game, updatedRound);
+
+  const updatedRounds = [
+    ...game.rounds.slice(0, game.rounds.length - 1),
+    updatedRound,
+  ];
+  const [yourScore, opponentScore] = calculateRoundScoreSums(
+    updatedRounds,
+    currentUid,
+    opponentUid
+  );
+  const isEndOfGame = yourScore >= 500 || opponentScore >= 500;
+
+  const isEndOfRound = newHand.length === 0 || currentRound.deck.length === 0;
+
+  if (isEndOfGame) {
+    db.collection(Collections.games).doc(game.id).update({
+      status: GameStatus.ended,
+      rounds: updatedRounds,
+    });
+  } else if (isEndOfRound) {
+    db.collection(Collections.games)
+      .doc(game.id)
+      .update({
+        rounds: updatedRounds.concat(initializeRound(currentUid, opponentUid)),
+      });
+  } else {
+    updateRound(game, updatedRound);
+  }
 }

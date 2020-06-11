@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import styled from 'styled-components';
 import {
   Typography,
   Box,
@@ -12,7 +13,17 @@ import { ExpandLess } from '@material-ui/icons';
 import Card from './components/Card';
 import { Round, Card as CardType, Game, User, Phase } from './types';
 import { useCurrentUser, layDown, discard } from './firebase';
-import { isSameCard, isValidSet, canAddMultipleCardsToSet, getCardDisplayValue, getCardDisplaySuit } from './util';
+import {
+  isSameCard,
+  isValidSet,
+  canAddMultipleCardsToSet,
+  getCardDisplayValue,
+  getCardDisplaySuit,
+} from './util';
+
+const StyledExpansionPanelDetails = styled(ExpansionPanelDetails)`
+  display: block;
+`;
 
 function selectionIncludesCard(selectedCards: CardType[], card: CardType) {
   return selectedCards.some((selectedCard) => isSameCard(card, selectedCard));
@@ -93,11 +104,12 @@ export default function YourHand({
       <ExpansionPanelSummary expandIcon={<ExpandLess />}>
         <Typography variant="body1">Your hand</Typography>
       </ExpansionPanelSummary>
-      <ExpansionPanelDetails>
+      <StyledExpansionPanelDetails>
         {yourTurn && mustPlayCard && (
           <Box mb="2px">
             <Typography variant="caption" color="error">
-              You must play the {getCardDisplayValue(mustPlayCard.value)} of {getCardDisplaySuit(mustPlayCard.suit)}.
+              You must play the {getCardDisplayValue(mustPlayCard.value)} of{' '}
+              {getCardDisplaySuit(mustPlayCard.suit)}.
             </Typography>
           </Box>
         )}
@@ -112,14 +124,24 @@ export default function YourHand({
             />
           ))}
         </Box>
-      </ExpansionPanelDetails>
+      </StyledExpansionPanelDetails>
       <ExpansionPanelActions>
-        <Button size="small" color="primary" disabled={!yourTurn || selectedCards.length < 1} onClick={handleLayDown}>
+        <Button
+          size="small"
+          color="primary"
+          disabled={!yourTurn || selectedCards.length < 1}
+          onClick={handleLayDown}
+        >
           Lay down
         </Button>
         <Button
           size="small"
-          disabled={!yourTurn || selectedCards.length !== 1 || currentPhase !== Phase.playPhase}
+          disabled={
+            !yourTurn ||
+            selectedCards.length !== 1 ||
+            currentPhase !== Phase.playPhase ||
+            round.turn.mustPlayCard !== null
+          }
           onClick={handleDiscard}
         >
           Discard

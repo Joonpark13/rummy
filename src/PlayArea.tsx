@@ -102,18 +102,30 @@ export default function PlayArea({
               suit={card.suit}
               value={card.value}
               selected={pickUpCardIndex !== null && index >= pickUpCardIndex}
-              onClick={isYourTurn && currentPhase === Phase.startPhase ? () => handleSelect(index) : undefined}
+              onClick={
+                isYourTurn && currentPhase === Phase.startPhase
+                  ? () => handleSelect(index)
+                  : undefined
+              }
             />
           ))}
         </Box>
       </CardContent>
       <CardActions>
         {pickUpCardIndex === null ? (
-          <Button color="primary" disabled={!isYourTurn || currentPhase !== Phase.startPhase} onClick={handleDraw}>
+          <Button
+            color="primary"
+            disabled={!isYourTurn || currentPhase !== Phase.startPhase}
+            onClick={handleDraw}
+          >
             Draw from deck
           </Button>
         ) : (
-          <Button color="primary" disabled={currentPhase !== Phase.startPhase} onClick={handlePickUp}>
+          <Button
+            color="primary"
+            disabled={currentPhase !== Phase.startPhase}
+            onClick={handlePickUp}
+          >
             Pick up selected
           </Button>
         )}

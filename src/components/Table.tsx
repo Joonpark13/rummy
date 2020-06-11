@@ -17,7 +17,7 @@ export default function Table({ title, table }: TableProps) {
           <Typography variant="caption">No cards laid down.</Typography>
         ) : (
           Object.values(table).map((matchSet) => (
-            <Box key={JSON.stringify(matchSet)} mr={1}>
+            <Box key={JSON.stringify(matchSet)} mr={1} mb="4px">
               <MatchSet matchSet={matchSet} />
             </Box>
           ))
