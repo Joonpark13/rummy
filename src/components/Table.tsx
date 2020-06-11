@@ -1,11 +1,11 @@
 import React from 'react';
 import { Typography, Box } from '@material-ui/core';
-import MatchSet from '../MatchSet';
+import MatchSet from './MatchSet';
 import { Card } from '../types';
 
 type TableProps = {
   title: string;
-  table: Card[][];
+  table: { [index: number]: Card[] };
 };
 
 export default function Table({ title, table }: TableProps) {
@@ -13,11 +13,11 @@ export default function Table({ title, table }: TableProps) {
     <>
       <Typography variant="subtitle1">{title}</Typography>
       <Box display="flex" flexWrap="wrap">
-        {table.length === 0 ? (
+        {Object.values(table).length === 0 ? (
           <Typography variant="caption">No cards laid down.</Typography>
         ) : (
-          table.map((matchSet) => (
-            <Box key={JSON.stringify(matchSet)} mr="4px">
+          Object.values(table).map((matchSet) => (
+            <Box key={JSON.stringify(matchSet)} mr={1}>
               <MatchSet matchSet={matchSet} />
             </Box>
           ))

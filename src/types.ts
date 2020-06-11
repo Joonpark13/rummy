@@ -40,7 +40,7 @@ export type Round = {
   playerCards: {
     [uid: string]: {
       hand: Card[];
-      laid: Card[][];
+      laid: { [index: number]: Card[] };
     };
   };
 };

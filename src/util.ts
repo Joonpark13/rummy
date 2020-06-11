@@ -5,7 +5,7 @@ export function getCurrentRound(game: Game): Round {
   return game.rounds[game.rounds.length - 1];
 }
 
-function isValidSet(cards: Card[]) {
+export function isValidSet(cards: Card[]) {
   if (cards.length < 3) {
     return false;
   }
@@ -28,7 +28,11 @@ export function canAddToSet(card: Card, sets: Card[][]) {
   return sets.some((set) => isValidSet([...set, card]));
 }
 
-function isSameCard(card1: Card, card2: Card) {
+export function canAddMultipleCardsToSet(cards: Card[], sets: Card[][]) {
+  return sets.some((set) => isValidSet([...set, ...cards]));
+}
+
+export function isSameCard(card1: Card, card2: Card) {
   return card1.suit === card2.suit && card1.value === card2.value;
 }
 

@@ -45,7 +45,10 @@ export default function PlayArea({
     const mustPlayCard = pickedUpCards[0];
 
     const playersCards = Object.values(currentRound.playerCards);
-    const allPlayedSets = [...playersCards[0].laid, ...playersCards[1].laid];
+    const allPlayedSets = [
+      ...Object.values(playersCards[0].laid),
+      ...Object.values(playersCards[1].laid),
+    ];
     const canAddToExistingSet = canAddToSet(mustPlayCard, allPlayedSets);
 
     const wouldBeHand = [
@@ -81,6 +84,7 @@ export default function PlayArea({
         onIllegalAction();
       } else if (currentUser) {
         pickUpDiscards(pickUpCardIndex, game, currentUser.uid);
+        setPickUpCardIndex(null);
         onAction();
       }
     }

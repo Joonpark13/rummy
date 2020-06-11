@@ -55,9 +55,13 @@ function calculateRoundScores(
   return rounds.map((round) => {
     let yourScore = 0;
     let opponentScore = 0;
-    yourScore += calculateScore(round.playerCards[currentUid].laid.flat());
+    yourScore += calculateScore(
+      Object.values(round.playerCards[currentUid].laid).flat()
+    );
     yourScore -= calculateScore(round.playerCards[currentUid].hand);
-    opponentScore += calculateScore(round.playerCards[opponentUid].laid.flat());
+    opponentScore += calculateScore(
+      Object.values(round.playerCards[opponentUid].laid).flat()
+    );
     opponentScore -= calculateScore(round.playerCards[opponentUid].hand);
     return [yourScore, opponentScore];
   });

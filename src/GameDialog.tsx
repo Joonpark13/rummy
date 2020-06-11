@@ -37,6 +37,10 @@ export default function GameDialog({
 
   const currentRound = getCurrentRound(game);
 
+  function showIllegalActionModal() {
+    setIllegalActionModalOpen(true);
+  }
+
   function closeIllegalActionModal() {
     setIllegalActionModalOpen(false);
   }
@@ -70,7 +74,7 @@ export default function GameDialog({
         <PlayArea
           game={game}
           onAction={() => setYourHandOpen(true)}
-          onIllegalAction={() => setIllegalActionModalOpen(true)}
+          onIllegalAction={showIllegalActionModal}
         />
         <YourTable round={currentRound} />
       </Box>
@@ -79,7 +83,10 @@ export default function GameDialog({
         <YourHand
           round={currentRound}
           open={yourHandOpen}
+          game={game}
+          opponent={opponent}
           onChange={() => setYourHandOpen(!yourHandOpen)}
+          onIllegalAction={showIllegalActionModal}
         />
       </Box>
 

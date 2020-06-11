@@ -13,8 +13,9 @@ import {
   GameStatus,
   Game,
   Round,
+  Card,
 } from './types';
-import { getCurrentRound } from './util';
+import { getCurrentRound, isSameCard, isValidSet } from './util';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyCUX6oYXngvqjDR29JBam1LPa2FoaZmRA8',
@@ -271,6 +272,55 @@ export function pickUpDiscards(
           ...currentRound.playerCards[currentUid].hand,
           ...currentRound.discard.slice(selectedCardIndex),
         ],
+      },
+    },
+  };
+  updateRound(game, updatedRound);
+}
+
+function sortCards(cards: Card[]) {
+  return cards.sort((a, b) => a.value - b.value);
+}
+
+function insertCardsIntoTable(
+  currentTable: { [index: number]: Card[] },
+  selectedCards: Card[]
+) {
+  const newTable: { [index: number]: Card[] } = {};
+  let inserted = false;
+  Object.values(currentTable).forEach((set, index) => {
+    if (isValidSet([...set, ...selectedCards])) {
+      newTable[index] = sortCards([...set, ...selectedCards]);
+      inserted = true;
+    } else {
+      newTable[index] = set;
+    }
+  });
+  if (!inserted) {
+    newTable[Object.values(currentTable).length] = selectedCards;
+  }
+  return newTable;
+}
+
+export function layDown(selectedCards: Card[], currentUid: string, game: Game) {
+  const currentRound = getCurrentRound(game);
+  const currentHand = currentRound.playerCards[currentUid].hand;
+  const newHand = currentHand.filter(
+    (card) =>
+      !selectedCards.some((selectedCard) => isSameCard(selectedCard, card))
+  );
+
+  const currentTable = currentRound.playerCards[currentUid].laid;
+  const newTable = insertCardsIntoTable(currentTable, selectedCards);
+
+  const updatedRound = {
+    ...currentRound,
+    playerCards: {
+      ...currentRound.playerCards,
+      [currentUid]: {
+        ...currentRound.playerCards[currentUid],
+        hand: newHand,
+        laid: newTable,
       },
     },
   };

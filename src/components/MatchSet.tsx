@@ -1,6 +1,7 @@
 import React from 'react';
-import Card from './components/Card';
-import { Card as CardType } from './types';
+import { Box } from '@material-ui/core';
+import Card from './Card';
+import { Card as CardType } from '../types';
 
 type MatchSetProps = {
   matchSet: CardType[];
@@ -8,10 +9,10 @@ type MatchSetProps = {
 
 export default function MatchSet({ matchSet }: MatchSetProps) {
   return (
-    <div>
+    <Box display="flex">
       {matchSet.map((card) => (
         <Card key={JSON.stringify(card)} suit={card.suit} value={card.value} />
       ))}
-    </div>
+    </Box>
   );
 }
