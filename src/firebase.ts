@@ -407,6 +407,8 @@ export function discard(
     },
   };
 
+  const isEndOfRound = newHand.length === 0 || currentRound.deck.length === 0;
+
   const updatedRounds = [
     ...game.rounds.slice(0, game.rounds.length - 1),
     updatedRound,
@@ -418,9 +420,7 @@ export function discard(
   );
   const isEndOfGame = yourScore >= 500 || opponentScore >= 500;
 
-  const isEndOfRound = newHand.length === 0 || currentRound.deck.length === 0;
-
-  if (isEndOfGame) {
+  if (isEndOfRound && isEndOfGame) {
     db.collection(Collections.games).doc(game.id).update({
       status: GameStatus.ended,
       rounds: updatedRounds,
