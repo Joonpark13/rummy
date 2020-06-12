@@ -16,7 +16,7 @@ type ReceivedGameRequestItemProps = {
 export default function ReceivedGameRequestItem({
   gameRequest,
 }: ReceivedGameRequestItemProps) {
-  const user = useUser(gameRequest.to);
+  const user = useUser(gameRequest.from);
 
   if (!user) {
     return null;
