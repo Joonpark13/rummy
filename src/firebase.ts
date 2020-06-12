@@ -435,3 +435,27 @@ export function discard(
     updateRound(game, updatedRound);
   }
 }
+
+export function reorderHand(
+  card: Card,
+  from: number,
+  to: number,
+  game: Game,
+  currentUid: string
+) {
+  const currentRound = getCurrentRound(game);
+  const newHand = [...currentRound.playerCards[currentUid].hand];
+  newHand.splice(from, 1);
+  newHand.splice(to, 0, card);
+  const updatedRound = {
+    ...currentRound,
+    playerCards: {
+      ...currentRound.playerCards,
+      [currentUid]: {
+        ...currentRound.playerCards[currentUid],
+        hand: newHand,
+      },
+    },
+  };
+  updateRound(game, updatedRound);
+}

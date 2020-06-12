@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import { Droppable, Draggable } from 'react-beautiful-dnd';
 import {
   Typography,
   Box,
@@ -24,6 +25,11 @@ import {
 
 const StyledExpansionPanelDetails = styled(ExpansionPanelDetails)`
   display: block;
+`;
+
+const FlexBox = styled.div`
+  display: flex;
+  flex-wrap: wrap;
 `;
 
 function selectionIncludesCard(selectedCards: CardType[], card: CardType) {
@@ -111,17 +117,41 @@ export default function YourHand({
             </Typography>
           </Box>
         )}
-        <Box display="flex" flexWrap="wrap">
-          {yourHand.map((card) => (
-            <Card
-              key={JSON.stringify(card)}
-              suit={card.suit}
-              value={card.value}
-              selected={selectionIncludesCard(selectedCards, card)}
-              onClick={yourTurn ? () => handleSelect(card) : undefined}
-            />
-          ))}
-        </Box>
+        <Droppable droppableId="your-hand-droppable" direction="horizontal">
+          {(provided) => (
+            <FlexBox ref={provided.innerRef} {...provided.droppableProps}>
+              {yourHand.map((card, index) => (
+                <Draggable
+                  key={JSON.stringify(card)}
+                  draggableId={JSON.stringify({
+                    game,
+                    currentUid: currentUser.uid,
+                    card,
+                  })}
+                  index={index}
+                >
+                  {(provided) => (
+                    <div
+                      ref={provided.innerRef}
+                      {...provided.draggableProps}
+                      {...provided.dragHandleProps}
+                    >
+                      <Card
+                        suit={card.suit}
+                        value={card.value}
+                        selected={selectionIncludesCard(selectedCards, card)}
+                        onClick={
+                          yourTurn ? () => handleSelect(card) : undefined
+                        }
+                      />
+                    </div>
+                  )}
+                </Draggable>
+              ))}
+              {provided.placeholder}
+            </FlexBox>
+          )}
+        </Droppable>
       </StyledExpansionPanelDetails>
       <ExpansionPanelActions>
         <Button
