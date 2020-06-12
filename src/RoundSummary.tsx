@@ -1,4 +1,5 @@
 import React from 'react';
+import styled from 'styled-components';
 import {
   Typography,
   Box,
@@ -11,6 +12,10 @@ import { Game, Round, User } from './types';
 import { EXPANSION_PANEL_HEIGHT } from './constants';
 import { useCurrentUser } from './firebase';
 import { calculateRoundScores } from './util';
+
+const StyledExpansionPanelDetails = styled(ExpansionPanelDetails)`
+  display: block;
+`;
 
 type RoundSummaryProps = {
   opponent: User;
@@ -59,7 +64,7 @@ export default function RoundSummary({ opponent, game }: RoundSummaryProps) {
             You: {yourScore} vs {opponent.displayName}: {opponentScore}
           </Typography>
         </ExpansionPanelSummary>
-        <ExpansionPanelDetails>
+        <StyledExpansionPanelDetails>
           {scoresPerRound.length === 0 ? (
             <Typography variant="caption">No previous rounds yet.</Typography>
           ) : (
@@ -72,7 +77,7 @@ export default function RoundSummary({ opponent, game }: RoundSummaryProps) {
               </div>
             ))
           )}
-        </ExpansionPanelDetails>
+        </StyledExpansionPanelDetails>
       </ExpansionPanel>
     </Box>
   );
