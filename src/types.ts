@@ -2,6 +2,7 @@ export enum Collections {
   users = 'users',
   requests = 'requests',
   games = 'games',
+  rounds = 'rounds',
 }
 
 export type User = {
@@ -51,6 +52,7 @@ export type Table = {
 };
 
 export type Round = {
+  id: string;
   deck: Card[];
   discard: Card[];
   turn: Turn;
@@ -65,7 +67,7 @@ export type Round = {
 export type Game = {
   id: string;
   players: string[];
-  rounds: Round[];
+  rounds: string[];
   status: GameStatus;
   startTime: firebase.firestore.Timestamp;
 };

@@ -10,8 +10,8 @@ import {
 import { ExpandMore } from '@material-ui/icons';
 import { Game, Round, User } from './types';
 import { EXPANSION_PANEL_HEIGHT } from './constants';
-import { useCurrentUser } from './firebase';
-import { calculateRoundScores } from './util';
+import { useCurrentUser, useGameRounds } from './firebase/hooks';
+import { calculateRoundScoresArray } from './util';
 
 const StyledExpansionPanelDetails = styled(ExpansionPanelDetails)`
   display: block;
@@ -37,12 +37,16 @@ function roundEnded(round: Round): boolean {
 
 export default function RoundSummary({ opponent, game }: RoundSummaryProps) {
   const currentUser = useCurrentUser();
-  if (!currentUser) {
+  const rounds = useGameRounds(game);
+
+  if (!currentUser || !rounds) {
     return null;
   }
 
-  const previousRounds = game.rounds.filter((round) => roundEnded(round));
-  const scoresPerRound = calculateRoundScores(
+  // Can't just take all but the last round because this summary still shows
+  // after the game is over, and all rounds should be accounted for in that case
+  const previousRounds = rounds.filter((round) => roundEnded(round));
+  const scoresPerRound = calculateRoundScoresArray(
     previousRounds,
     currentUser.uid,
     opponent.uid

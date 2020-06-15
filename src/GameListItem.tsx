@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { format } from 'date-fns';
 import { ListItem, ListItemText } from '@material-ui/core';
-import { useUser, useCurrentUser } from './firebase';
+import { useUser, useCurrentUser } from './firebase/hooks';
 import { Game } from './types';
 import GameDialog from './GameDialog';
 
@@ -19,7 +19,7 @@ export default function GameListItem({ game }: GameListItemProps) {
 
   const startTime = game.startTime.toDate();
 
-  if (!opponent) {
+  if (!currentUser || !opponent) {
     return null;
   }
   return (
@@ -33,6 +33,7 @@ export default function GameListItem({ game }: GameListItemProps) {
       <GameDialog
         open={open}
         game={game}
+        currentUser={currentUser}
         opponent={opponent}
         onClose={() => setOpen(false)}
       />

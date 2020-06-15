@@ -1,19 +1,22 @@
 import React from 'react';
 import HomeSection from './components/HomeSection';
-import { useCurrentGames } from './firebase';
 import { Typography, List } from '@material-ui/core';
 import GameListItem from './GameListItem';
+import { Game } from './types';
 
-export default function CurrentGames() {
-  const currentGames = useCurrentGames();
+type GamesDisplayProps = {
+  title: string;
+  games: Game[];
+};
 
+export default function GamesDisplay({ title, games }: GamesDisplayProps) {
   return (
-    <HomeSection title="Current Games">
-      {currentGames.length === 0 ? (
+    <HomeSection title={title}>
+      {games.length === 0 ? (
         <Typography variant="body1">No games to display.</Typography>
       ) : (
         <List>
-          {currentGames.map((game) => (
+          {games.map((game) => (
             <GameListItem key={game.id} game={game} />
           ))}
         </List>

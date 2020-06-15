@@ -7,13 +7,10 @@ import {
   Button,
 } from '@material-ui/core';
 import Card from './components/Card';
-import { drawCard, useCurrentUser, pickUpDiscards } from './firebase';
+import { useCurrentUser, useCurrentRound } from './firebase/hooks';
+import { drawCard, pickUpDiscards } from './firebase/actions';
 import { Game, Phase } from './types';
-import {
-  getCurrentRound,
-  containsValidSetUsingCard,
-  canAddToSet,
-} from './util';
+import { containsValidSetUsingCard, canAddToSet } from './util';
 
 type PlayAreaProps = {
   game: Game;
@@ -28,16 +25,17 @@ export default function PlayArea({
 }: PlayAreaProps) {
   const [pickUpCardIndex, setPickUpCardIndex] = useState<null | number>(null);
   const currentUser = useCurrentUser();
-  if (!currentUser) {
+  const currentRound = useCurrentRound(game);
+
+  if (!currentUser || !currentRound) {
     return null;
   }
 
-  const currentRound = getCurrentRound(game);
   const isYourTurn = currentRound.turn.player === currentUser.uid;
   const currentPhase = currentRound.turn.phase;
 
   function canPickUp(pickUpCardIndex: number) {
-    if (!currentUser) {
+    if (!currentUser || !currentRound) {
       return false;
     }
     if (pickUpCardIndex === currentRound.discard.length - 1) {
@@ -62,8 +60,8 @@ export default function PlayArea({
   }
 
   function handleDraw() {
-    if (currentUser) {
-      drawCard(game, currentUser.uid);
+    if (currentUser && currentRound) {
+      drawCard(currentRound, currentUser.uid);
       onAction();
     }
   }
@@ -80,8 +78,8 @@ export default function PlayArea({
     if (pickUpCardIndex !== null) {
       if (!canPickUp(pickUpCardIndex)) {
         onIllegalAction();
-      } else if (currentUser) {
-        pickUpDiscards(pickUpCardIndex, game, currentUser.uid);
+      } else if (currentUser && currentRound) {
+        pickUpDiscards(currentRound, pickUpCardIndex, currentUser.uid);
         setPickUpCardIndex(null);
         onAction();
       }

@@ -1,5 +1,7 @@
 import React from 'react';
-import firebase, { userExists, addUserToFirestore } from './firebase';
+import firebase from './firebase/init';
+import { addUserToFirestore } from './firebase/actions';
+import { userExists } from './firebase/selectors';
 import { StyledFirebaseAuth } from 'react-firebaseui';
 
 const uiConfig = {

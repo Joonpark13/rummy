@@ -1,9 +1,5 @@
 import { combination } from 'js-combinatorics';
-import { Game, Round, Card, Suit, Table, MatchSet } from './types';
-
-export function getCurrentRound(game: Game): Round {
-  return game.rounds[game.rounds.length - 1];
-}
+import { Round, Card, Suit, Table, MatchSet } from './types';
 
 export function isValidSet(cards: Card[]) {
   if (cards.length < 3) {
@@ -92,7 +88,7 @@ function getCardScoreValue(card: Card): number {
   return 5;
 }
 
-function calculateScore(cards: Card[]): number {
+export function calculateScore(cards: Card[]): number {
   let sum = 0;
   cards.forEach((card) => {
     sum += getCardScoreValue(card);
@@ -101,36 +97,45 @@ function calculateScore(cards: Card[]): number {
 }
 
 export function calculateRoundScores(
+  round: Round,
+  currentUid: string,
+  opponentUid: string
+): [number, number] {
+  let yourScore = 0;
+  yourScore += calculateScore(
+    getUserMatchSets(round.table, currentUid)
+      .flat()
+      .map(({ card }) => card)
+  );
+  yourScore -= calculateScore(round.playerCards[currentUid].hand);
+
+  let opponentScore = 0;
+  opponentScore += calculateScore(
+    getUserMatchSets(round.table, opponentUid)
+      .flat()
+      .map(({ card }) => card)
+  );
+  opponentScore -= calculateScore(round.playerCards[opponentUid].hand);
+
+  return [yourScore, opponentScore];
+}
+
+export function calculateRoundScoresArray(
   rounds: Round[],
   currentUid: string,
   opponentUid: string
 ): Array<[number, number]> {
-  return rounds.map((round) => {
-    let yourScore = 0;
-    let opponentScore = 0;
-    yourScore += calculateScore(
-      getUserMatchSets(round.table, currentUid)
-        .flat()
-        .map(({ card }) => card)
-    );
-    yourScore -= calculateScore(round.playerCards[currentUid].hand);
-    opponentScore += calculateScore(
-      getUserMatchSets(round.table, opponentUid)
-        .flat()
-        .map(({ card }) => card)
-    );
-    opponentScore -= calculateScore(round.playerCards[opponentUid].hand);
-    const scores: [number, number] = [yourScore, opponentScore];
-    return scores;
-  });
+  return rounds.map((round) =>
+    calculateRoundScores(round, currentUid, opponentUid)
+  );
 }
 
-export function calculateRoundScoreSums(
+export function calculateTotalScores(
   rounds: Round[],
   currentUid: string,
   opponentUid: string
 ) {
-  const scores = calculateRoundScores(rounds, currentUid, opponentUid);
+  const scores = calculateRoundScoresArray(rounds, currentUid, opponentUid);
   const yourTotalScore = scores
     .map((score) => score[0])
     .reduce((total, score) => total + score, 0);

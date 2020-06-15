@@ -1,7 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
 import { AppBar, Toolbar, Typography, Button } from '@material-ui/core';
-import { useIsSignedIn, signOut } from './firebase';
+import { useIsSignedIn } from './firebase/hooks';
+import { signOut } from './firebase/actions';
 
 const StyledToolbar = styled(Toolbar)`
   display: flex;

@@ -11,12 +11,12 @@ import {
 } from '@material-ui/core';
 import { Close } from '@material-ui/icons';
 import {
-  useCurrentUser,
-  userEmailExists,
-  createGameRequest,
   findUserByEmail,
   pendingGameRequestExists,
-} from './firebase';
+  userEmailExists,
+} from './firebase/selectors';
+import { createGameRequest } from './firebase/actions';
+import { useCurrentUser } from './firebase/hooks';
 import HomeSection from './components/HomeSection';
 
 export default function StartNewGame() {

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { Droppable, Draggable } from 'react-beautiful-dnd';
+import { DragDropContext, DropResult, Droppable, Draggable } from 'react-beautiful-dnd';
 import {
   Typography,
   Box,
@@ -13,14 +13,14 @@ import {
 import { ExpandLess } from '@material-ui/icons';
 import Card from './components/Card';
 import { Round, Card as CardType, Game, User, Phase } from './types';
-import { useCurrentUser, layDown, discard } from './firebase';
+import { useCurrentUser } from './firebase/hooks';
+import { layDown, discard, reorderHand } from './firebase/actions';
 import {
   isSameCard,
   isValidSet,
   canAddMultipleCardsToSet,
   getCardDisplayValue,
   getCardDisplaySuit,
-  getUserMatchSets,
 } from './util';
 
 const StyledExpansionPanelDetails = styled(ExpansionPanelDetails)`
@@ -87,7 +87,7 @@ export default function YourHand({
         (handIsValid || canAddToExistingSet) &&
         selectedCards.length !== yourHand.length
       ) {
-        layDown(selectedCards, currentUser.uid, game);
+        layDown(round, selectedCards, currentUser.uid);
         setSelectedCards([]);
         onLayDown();
       } else {
@@ -98,8 +98,25 @@ export default function YourHand({
 
   function handleDiscard() {
     if (currentUser) {
-      discard(selectedCards[0], game, currentUser.uid, opponent.uid);
+      discard(round, selectedCards[0], game, currentUser.uid, opponent.uid);
       setSelectedCards([]);
+    }
+  }
+
+  function handleDrag({ source, destination, draggableId }: DropResult) {
+    if (!destination) {
+      return;
+    }
+    if (
+      destination.droppableId === source.droppableId &&
+      destination.index === source.index
+    ) {
+      return;
+    }
+
+    if (currentUser) {
+      const card = JSON.parse(draggableId);
+      reorderHand(round, card, source.index, destination.index, currentUser.uid);
     }
   }
 
@@ -117,41 +134,39 @@ export default function YourHand({
             </Typography>
           </Box>
         )}
-        <Droppable droppableId="your-hand-droppable" direction="horizontal">
-          {(provided) => (
-            <FlexBox ref={provided.innerRef} {...provided.droppableProps}>
-              {yourHand.map((card, index) => (
-                <Draggable
-                  key={JSON.stringify(card)}
-                  draggableId={JSON.stringify({
-                    game,
-                    currentUid: currentUser.uid,
-                    card,
-                  })}
-                  index={index}
-                >
-                  {(provided) => (
-                    <div
-                      ref={provided.innerRef}
-                      {...provided.draggableProps}
-                      {...provided.dragHandleProps}
-                    >
-                      <Card
-                        suit={card.suit}
-                        value={card.value}
-                        selected={selectionIncludesCard(selectedCards, card)}
-                        onClick={
-                          yourTurn ? () => handleSelect(card) : undefined
-                        }
-                      />
-                    </div>
-                  )}
-                </Draggable>
-              ))}
-              {provided.placeholder}
-            </FlexBox>
-          )}
-        </Droppable>
+        <DragDropContext onDragEnd={handleDrag}>
+          <Droppable droppableId="your-hand-droppable" direction="horizontal">
+            {(provided) => (
+              <FlexBox ref={provided.innerRef} {...provided.droppableProps}>
+                {yourHand.map((card, index) => (
+                  <Draggable
+                    key={JSON.stringify(card)}
+                    draggableId={JSON.stringify(card)}
+                    index={index}
+                  >
+                    {(provided) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        {...provided.dragHandleProps}
+                      >
+                        <Card
+                          suit={card.suit}
+                          value={card.value}
+                          selected={selectionIncludesCard(selectedCards, card)}
+                          onClick={
+                            yourTurn ? () => handleSelect(card) : undefined
+                          }
+                        />
+                      </div>
+                    )}
+                  </Draggable>
+                ))}
+                {provided.placeholder}
+              </FlexBox>
+            )}
+          </Droppable>
+        </DragDropContext>
       </StyledExpansionPanelDetails>
       <ExpansionPanelActions>
         <Button

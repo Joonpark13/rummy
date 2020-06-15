@@ -3,7 +3,7 @@ import { List, Divider, Typography } from '@material-ui/core';
 import HomeSection from './components/HomeSection';
 import SentGameRequestItem from './SentGameRequestItem';
 import ReceivedGameRequestItem from './ReceivedGameRequestItem';
-import { useGameRequests } from './firebase';
+import { useGameRequests } from './firebase/hooks';
 
 export default function GameRequests() {
   const [sentGameRequests, receivedGameRequests] = useGameRequests();

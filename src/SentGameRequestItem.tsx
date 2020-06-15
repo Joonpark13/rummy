@@ -6,7 +6,8 @@ import {
   IconButton,
 } from '@material-ui/core';
 import { Delete } from '@material-ui/icons';
-import { useUser, removeRequest } from './firebase';
+import { useUser } from './firebase/hooks';
+import { removeRequest } from './firebase/actions';
 import { GameRequest, GameRequestStatus } from './types';
 
 type SentGameRequestItemProps = {

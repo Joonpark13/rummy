@@ -3,7 +3,7 @@ import { Box } from '@material-ui/core';
 import MatchSets from './components/MatchSets';
 import { Round } from './types';
 import { EXPANSION_PANEL_HEIGHT } from './constants';
-import { useCurrentUser } from './firebase';
+import { useCurrentUser } from './firebase/hooks';
 import { getUserMatchSets } from './util';
 
 type YourMatchSetsProps = {

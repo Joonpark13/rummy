@@ -1,65 +1,38 @@
 import React, { useState } from 'react';
 import {
   Dialog,
-  AppBar,
-  Toolbar,
-  IconButton,
   Box,
   DialogTitle,
   DialogActions,
   Button,
-  Typography,
 } from '@material-ui/core';
-import { ArrowBack } from '@material-ui/icons';
 import { Game, User, GameStatus } from './types';
+import GameDialogHeader from './GameDialogHeader';
 import RoundSummary from './RoundSummary';
 import OpponentCards from './OpponentCards';
 import PlayArea from './PlayArea';
 import YourMatchSets from './YourMatchSets';
 import YourHand from './YourHand';
-import { getCurrentRound, calculateRoundScoreSums } from './util';
-import { useCurrentUser } from './firebase';
+import { useCurrentRound } from './firebase/hooks';
 
 type GameDialogProps = {
   open: boolean;
   game: Game;
+  currentUser: User;
   opponent: User;
   onClose: () => void;
 };
 
-function getHeaderText(game: Game, currentUid: string, opponent: User) {
-  if (game.status === GameStatus.ended) {
-    const [yourScore, opponentScore] = calculateRoundScoreSums(
-      game.rounds,
-      currentUid,
-      opponent.uid
-    );
-    if (yourScore > opponentScore) {
-      return 'You won!';
-    }
-    if (opponentScore > yourScore) {
-      return 'You lost.';
-    }
-    return 'You tied.';
-  }
-  const currentRound = getCurrentRound(game);
-  if (currentRound.turn.player === opponent.uid) {
-    return `${opponent.displayName}'s Turn`;
-  }
-  return 'Your Turn';
-}
-
 export default function GameDialog({
   open,
   game,
+  currentUser,
   opponent,
   onClose,
 }: GameDialogProps) {
   const [yourHandOpen, setYourHandOpen] = useState(false);
   const [illegalActionModalOpen, setIllegalActionModalOpen] = useState(false);
-  const currentUser = useCurrentUser();
-
-  const currentRound = getCurrentRound(game);
+  const currentRound = useCurrentRound(game);
 
   function showIllegalActionModal() {
     setIllegalActionModalOpen(true);
@@ -69,21 +42,13 @@ export default function GameDialog({
     setIllegalActionModalOpen(false);
   }
 
-  if (!currentUser) {
+  if (!currentUser || !currentRound) {
     return null;
   }
+
   return (
     <Dialog fullScreen open={open} onClose={onClose}>
-      <AppBar position="sticky">
-        <Toolbar>
-          <IconButton edge="start" color="inherit" onClick={onClose}>
-            <ArrowBack />
-          </IconButton>
-          <Typography variant="h6">
-            {getHeaderText(game, currentUser.uid, opponent)}
-          </Typography>
-        </Toolbar>
-      </AppBar>
+      <GameDialogHeader game={game} currentUid={currentUser.uid} opponent={opponent} onClose={onClose} />
 
       <RoundSummary game={game} opponent={opponent} />
 

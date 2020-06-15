@@ -1,21 +1,24 @@
 import React from 'react';
 import { Box } from '@material-ui/core';
+import { useCurrentGames, usePreviousGames } from './firebase/hooks';
 import GameRequests from './GameRequests';
-import CurrentGames from './CurrentGames';
+import GamesDisplay from './GamesDisplay';
 import StartNewGame from './StartNewGame';
-import PreviousGames from './PreviousGames';
 
 export default function Home() {
+  const currentGames = useCurrentGames();
+  const pastGames = usePreviousGames();
+
   return (
     <Box p={2}>
       <Box mb={3}>
         <GameRequests />
       </Box>
       <Box mb={3}>
-        <CurrentGames />
+        <GamesDisplay title="Current Games" games={currentGames} />
       </Box>
       <Box mb={3}>
-        <PreviousGames />
+        <GamesDisplay title="Previous Games" games={pastGames} />
       </Box>
       <StartNewGame />
     </Box>
