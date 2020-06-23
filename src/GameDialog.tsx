@@ -48,7 +48,12 @@ export default function GameDialog({
 
   return (
     <Dialog fullScreen open={open} onClose={onClose}>
-      <GameDialogHeader game={game} currentUid={currentUser.uid} opponent={opponent} onClose={onClose} />
+      <GameDialogHeader
+        game={game}
+        currentUid={currentUser.uid}
+        opponent={opponent}
+        onClose={onClose}
+      />
 
       <RoundSummary game={game} opponent={opponent} />
 

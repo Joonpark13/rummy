@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { DragDropContext, DropResult, Droppable, Draggable } from 'react-beautiful-dnd';
+import {
+  DragDropContext,
+  DropResult,
+  Droppable,
+  Draggable,
+} from 'react-beautiful-dnd';
 import {
   Typography,
   Box,
@@ -25,6 +30,10 @@ import {
 
 const StyledExpansionPanelDetails = styled(ExpansionPanelDetails)`
   display: block;
+`;
+
+const StyledExpansionPanelActions = styled(ExpansionPanelActions)`
+  justify-content: space-between;
 `;
 
 const FlexBox = styled.div`
@@ -116,7 +125,13 @@ export default function YourHand({
 
     if (currentUser) {
       const card = JSON.parse(draggableId);
-      reorderHand(round, card, source.index, destination.index, currentUser.uid);
+      reorderHand(
+        round,
+        card,
+        source.index,
+        destination.index,
+        currentUser.uid
+      );
     }
   }
 
@@ -168,7 +183,7 @@ export default function YourHand({
           </Droppable>
         </DragDropContext>
       </StyledExpansionPanelDetails>
-      <ExpansionPanelActions>
+      <StyledExpansionPanelActions>
         <Button
           size="small"
           color="primary"
@@ -189,7 +204,7 @@ export default function YourHand({
         >
           Discard
         </Button>
-      </ExpansionPanelActions>
+      </StyledExpansionPanelActions>
     </ExpansionPanel>
   );
 }

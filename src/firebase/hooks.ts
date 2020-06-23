@@ -92,7 +92,10 @@ export function usePreviousGames(): Game[] {
 export function useCurrentRound(game: Game) {
   const [round, setRound] = useState<Round | null>(null);
   const currentRoundId = game.rounds[game.rounds.length - 1];
-  useEffect(() => subscribeToRound(currentRoundId, setRound), [currentRoundId, setRound]);
+  useEffect(() => subscribeToRound(currentRoundId, setRound), [
+    currentRoundId,
+    setRound,
+  ]);
   return round;
 }
 

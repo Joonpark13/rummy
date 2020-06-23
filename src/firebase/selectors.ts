@@ -100,21 +100,34 @@ export async function getRounds(game: Game): Promise<Round[]> {
   return Promise.all(game.rounds.map(getRound));
 }
 
-export function subscribeToRound(roundId:string, setter:(value: Round) => void) {
-  return db.collection(Collections.rounds).doc(roundId).onSnapshot(doc => {
-    setter({ id: doc.id, ...doc.data() } as Round);
-  });
+export function subscribeToRound(
+  roundId: string,
+  setter: (value: Round) => void
+) {
+  return db
+    .collection(Collections.rounds)
+    .doc(roundId)
+    .onSnapshot((doc) => {
+      setter({ id: doc.id, ...doc.data() } as Round);
+    });
 }
 
-export function subscribeToGameRounds(game: Game, setter: (value: Round[]) => void) {
+export function subscribeToGameRounds(
+  game: Game,
+  setter: (value: Round[]) => void
+) {
   return db
     .collection(Collections.rounds)
     .where(firebase.firestore.FieldPath.documentId(), 'in', game.rounds)
-    .onSnapshot(querySnapshot => {
-      setter(
-        querySnapshot.docs.map(
-          queryDocSnapshot => ({ id: queryDocSnapshot.id, ...queryDocSnapshot.data() } as Round)
-        )
+    .onSnapshot((querySnapshot) => {
+      const unsortedRounds = querySnapshot.docs.map(
+        (queryDocSnapshot) =>
+          ({ id: queryDocSnapshot.id, ...queryDocSnapshot.data() } as Round)
       );
+      const sortedRounds = unsortedRounds.sort(
+        (a, b) =>
+          a.startTime.toDate().getTime() - b.startTime.toDate().getTime()
+      );
+      setter(sortedRounds);
     });
 }

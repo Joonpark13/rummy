@@ -1,10 +1,5 @@
 import React from 'react';
-import {
-  AppBar,
-  Toolbar,
-  IconButton,
-  Typography,
-} from '@material-ui/core';
+import { AppBar, Toolbar, IconButton, Typography } from '@material-ui/core';
 import { ArrowBack } from '@material-ui/icons';
 import { calculateTotalScores } from './util';
 import { Game, User, GameStatus, Round } from './types';
@@ -44,7 +39,12 @@ type GameDialogHeaderProps = {
   opponent: User;
 };
 
-export default function GameDialogHeader({ onClose, game, currentUid, opponent }: GameDialogHeaderProps) {
+export default function GameDialogHeader({
+  onClose,
+  game,
+  currentUid,
+  opponent,
+}: GameDialogHeaderProps) {
   const allRounds = useGameRounds(game);
 
   if (!allRounds) {

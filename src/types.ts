@@ -62,6 +62,7 @@ export type Round = {
       hand: Card[];
     };
   };
+  startTime: firebase.firestore.Timestamp;
 };
 
 export type Game = {

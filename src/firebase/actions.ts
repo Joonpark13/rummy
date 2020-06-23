@@ -69,6 +69,7 @@ function initializeRound(firstPlayerUid: string, secondPlayerUid: string) {
       mustPlayCard: null,
     },
     table: {},
+    startTime: firebase.firestore.Timestamp.fromDate(new Date()),
   };
 }
 
